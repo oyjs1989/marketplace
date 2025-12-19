@@ -1,0 +1,11 @@
+{
+  "name": "go-code-review",
+  "version": "2.0.0",
+  "description": "Comprehensive Go code review with specialized skills for GORM, error handling, naming, logging, and code organization based on FUTU coding standards",
+  "author": "FUTU Development Team",
+  "skills": "../",
+  "changelog": {
+    "2.0.0": "Split monolithic skill into 5 specialized skills: orchestrator, gorm-review, error-safety, naming-logging, organization. Added shared FUTU_GO_STANDARDS.md reference document.",
+    "1.0.0": "Initial comprehensive Go code review skill"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "plugins": [
+    {
+      "name": "go-code-review",
+      "source": "./skills/go-code-review",
+      "version": "2.0.0",
+      "description": "Comprehensive Go code review with specialized skills for GORM, error handling, naming, logging, and code organization based on FUTU coding standards",
+      "author": {
+        "name": "FUTU Development Team",
+        "email": "dev@futunn.com"
+      },
+      "homepage": "https://gitlab.futunn.com/jasonouyang/marketplace",
+      "repository": "https://gitlab.futunn.com/jasonouyang/marketplace",
+      "license": "MIT",
+      "keywords": [
+        "go",
+        "code-review",
+        "gorm",
+        "error-handling",
+        "code-quality",
+        "standards"
+      ],
+      "skills": "./skills/go-code-review/"
+    }
+  ]
+}

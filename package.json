@@ -1,0 +1,22 @@
+{
+  "name": "claude-code-marketplace",
+  "version": "1.0.0",
+  "description": "A collection of reusable Claude Code skills, commands, and workflows",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "claude-code",
+    "skills",
+    "marketplace",
+    "ai",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.futunn.com/jasonouyang/marketplace.git"
+  }
+}
