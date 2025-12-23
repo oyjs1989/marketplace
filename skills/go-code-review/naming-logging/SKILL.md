@@ -511,16 +511,20 @@ func ProcessData(ctx context.Context, data *Data) error {
 
 ## Output Format
 
+**重要**: 所有问题描述和建议必须使用中文输出。
+
+Report issues in this format (用中文):
+
 ```markdown
-### Issue - [P1] Rule 2.X.Y
-**Location**: path/to/file.go:89
-**Category**: Naming / Logging
-**Original Code**:
+### 问题 - [P1] 规则 2.X.Y
+**位置**: path/to/file.go:89
+**类别**: 命名规范 / 日志规范
+**原始代码**:
 ```go
 func GetUserById(userId int64) (*User, error)
 ```
-**Problem**: ID should be uppercase, parameter should be camelCase
-**Suggestion**:
+**问题描述**: ID 应该全部大写,参数应该使用驼峰命名法
+**修改建议**:
 ```go
 func GetUserByID(userID int64) (*User, error)
 ```

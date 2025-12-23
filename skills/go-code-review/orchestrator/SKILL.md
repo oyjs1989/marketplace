@@ -80,47 +80,51 @@ For each changed file:
 
 ### Step 5: Output Format
 
-**IMPORTANT**: Only report code that has problems. Do NOT mention code that follows standards.
+**IMPORTANT - 重要输出要求**:
+- **必须使用中文输出所有审查结果**
+- Only report code that has problems. Do NOT mention code that follows standards.
+- 所有的问题描述(Problem)、建议(Suggestion)都必须用中文表达
+- 文件路径、代码片段保持原样,不需要翻译
 
 For each issue found:
 
 ```markdown
-## File: <file_path>
+## 文件: <file_path>
 
-### Issue 1 - [P0/P1/P2] Rule X.Y.Z
-**Location**: Line N
-**Category**: [GORM/Error/Naming/Logging/Organization]
-**Original Code**:
+### 问题 1 - [P0/P1/P2] 规则 X.Y.Z
+**位置**: 第 N 行
+**类别**: [GORM/错误处理/命名/日志/代码组织]
+**原始代码**:
 ```go
 // problematic code
 ```
-**Problem**: Clear description of the issue
-**Suggestion**: How to fix it with code example
+**问题描述**: 用中文清晰描述问题
+**修改建议**: 用中文说明如何修复,并提供代码示例
 ```
 
 ### Step 6: Save Results
 
-Output all findings to `code_review.result` file with summary:
+Output all findings to `code_review.result` file with summary (用中文输出):
 
 ```markdown
-# Code Review Summary
+# 代码审查总结
 
-**Total Issues**: X
-- P0 (Must Fix): X
-- P1 (Strongly Recommended): X
-- P2 (Suggested): X
+**问题总数**: X
+- P0 (必须修复): X
+- P1 (强烈建议): X
+- P2 (建议优化): X
 
-**Categories**:
-- GORM/Database: X issues
-- Error Handling: X issues
-- Concurrency: X issues
-- Naming: X issues
-- Logging: X issues
-- Code Organization: X issues
+**问题分类**:
+- GORM/数据库: X 个问题
+- 错误处理: X 个问题
+- 并发安全: X 个问题
+- 命名规范: X 个问题
+- 日志规范: X 个问题
+- 代码组织: X 个问题
 
 ---
 
-[Detailed issues follow...]
+[详细问题列表如下...]
 ```
 
 ## Review Checklist
@@ -175,9 +179,10 @@ For complete rule details, refer to: `shared/FUTU_GO_STANDARDS.md`
 
 ## Important Notes
 
+- **所有输出必须使用中文描述** (All output MUST be in Chinese)
 - Only report issues, not compliant code
 - Include specific line numbers from actual files
 - Prioritize by severity (P0 → P1 → P2)
-- Provide clear fix suggestions with examples
+- Provide clear fix suggestions with examples (用中文说明)
 - Consider business context for exceptions
 - Always save results to `code_review.result`

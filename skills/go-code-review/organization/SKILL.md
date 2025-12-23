@@ -622,16 +622,20 @@ func GetUserTest(t *testing.T) {}  // Wrong order
 
 ## Output Format
 
+**重要**: 所有问题描述和建议必须使用中文输出。
+
+Report issues in this format (用中文):
+
 ```markdown
-### Issue - [P1/P2] Rule X.Y.Z
-**Location**: path/to/file.go:67
-**Category**: Organization / Interface / Quality / Testing
-**Original Code**:
+### 问题 - [P1/P2] 规则 X.Y.Z
+**位置**: path/to/file.go:67
+**类别**: 代码组织 / 接口设计 / 代码质量 / 测试规范
+**原始代码**:
 ```go
 func CreateUser(ctx context.Context, name, email, phone, address, role string) error
 ```
-**Problem**: Too many parameters (>4), reduces readability
-**Suggestion**:
+**问题描述**: 参数过多(超过4个),降低可读性
+**修改建议**:
 ```go
 type CreateUserParams struct {
     Name, Email, Phone, Address, Role string

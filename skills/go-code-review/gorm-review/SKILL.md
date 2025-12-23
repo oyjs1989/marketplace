@@ -274,18 +274,20 @@ if user.ID == 0 {
 
 ## Output Format
 
-Report issues in this format:
+**重要**: 所有问题描述和建议必须使用中文输出。
+
+Report issues in this format (用中文):
 
 ```markdown
-### Issue - [P0] Rule 1.3.X
-**Location**: path/to/file.go:123
-**Category**: GORM/Database
-**Original Code**:
+### 问题 - [P0] 规则 1.3.X
+**位置**: path/to/file.go:123
+**类别**: GORM/数据库
+**原始代码**:
 ```go
 db.Find(&users)
 ```
-**Problem**: Missing WHERE clause and explicit column selection
-**Suggestion**:
+**问题描述**: 缺少 WHERE 条件和显式列选择
+**修改建议**:
 ```go
 db.Select("id, name, email, status").
     Where("status = ?", activeStatus).

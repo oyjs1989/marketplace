@@ -48,21 +48,25 @@ Analyze all modified files systematically to identify issues based on the priori
 
 ### Step 3: Output Format
 
-**IMPORTANT**: Only report code that has problems. Do NOT mention code that follows standards.
+**IMPORTANT - 重要输出要求**:
+- **必须使用中文输出所有审查结果** (All review results MUST be in Chinese)
+- Only report code that has problems. Do NOT mention code that follows standards.
+- 所有的问题描述、建议都必须用中文表达
+- 文件路径、代码片段保持原样
 
-For each issue found, output:
+For each issue found, output (用中文):
 
 ```markdown
-## File: <file_path>
+## 文件: <file_path>
 
-### Issue 1 - [Severity] Rule Number
-**Location**: Line X
-**Original Code**:
+### 问题 1 - [严重程度] 规则编号
+**位置**: 第 X 行
+**原始代码**:
 ```go
 // original code
 ```
-**Problem**: Detailed problem description
-**Suggestion**: How to fix it
+**问题描述**: 用中文详细描述问题
+**修改建议**: 用中文说明如何修复
 ```
 
 ### Step 4: Save Results
@@ -589,33 +593,33 @@ When performing code review, check:
 - [ ] Correct log format
 - [ ] Adequate test coverage
 
-## Example Output
+## Example Output (示例输出 - 使用中文)
 
 ```markdown
-# Code Review Result
+# 代码审查结果
 
-## File: internal/service/user_service.go
+## 文件: internal/service/user_service.go
 
-### Issue 1 - [P0] Rule 1.1.1 Error Wrapping
-**Location**: Line 45
-**Original Code**:
+### 问题 1 - [P0] 规则 1.1.1 错误包装
+**位置**: 第 45 行
+**原始代码**:
 ```go
 return fmt.Errorf("get user failed: %v", err)
 ```
-**Problem**: Using fmt.Errorf instead of errors.Wrap, losing error stack information
-**Suggestion**:
+**问题描述**: 使用 fmt.Errorf 而不是 errors.Wrap,会丢失错误堆栈信息
+**修改建议**:
 ```go
 return errors.Wrapf(err, "get user failed")
 ```
 
-### Issue 2 - [P1] Rule 2.2.1 Log Field Naming
-**Location**: Line 67
-**Original Code**:
+### 问题 2 - [P1] 规则 2.2.1 日志字段命名
+**位置**: 第 67 行
+**原始代码**:
 ```go
 log.Info(ctx, "user created", log.String("UserID", userID))
 ```
-**Problem**: Log field uses PascalCase, should use snake_case
-**Suggestion**:
+**问题描述**: 日志字段使用了 PascalCase,应该使用 snake_case
+**修改建议**:
 ```go
 log.Info(ctx, "user created", log.String("user_id", userID))
 ```
@@ -623,10 +627,11 @@ log.Info(ctx, "user created", log.String("user_id", userID))
 
 ## Important Notes
 
+- **所有输出必须使用中文** (All output MUST be in Chinese)
 - **Only report issues** - Don't mention code that already follows standards
 - **Be specific** - Include exact line numbers from source files
 - **Prioritize by severity** - P0 issues first, then P1, then P2
-- **Provide clear suggestions** - Show exactly how to fix each issue
+- **Provide clear suggestions** - Show exactly how to fix each issue (用中文说明)
 - **Focus on patterns** - Look for systematic issues across files
 - **Consider context** - Business requirements may justify exceptions
 

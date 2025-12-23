@@ -152,31 +152,31 @@ diff -u bad/user_service_bad.go good/user_service_good.go
 5. **修改建议**
 6. **正确的代码示例**
 
-### 示例输出格式
+### 示例输出格式 (中文输出)
 
 ```markdown
-## File: test-cases/go-code-review/bad/user_service_bad.go
+## 文件: test-cases/go-code-review/bad/user_service_bad.go
 
-### Issue 1 - [P0] Rule 1.1.1 Error Wrapping
-**Location**: Line 35
-**Original Code**:
+### 问题 1 - [P0] 规则 1.1.1 错误包装
+**位置**: 第 35 行
+**原始代码**:
 \`\`\`go
 return nil, fmt.Errorf("get user failed: %v", err)
 \`\`\`
-**Problem**: 使用 fmt.Errorf 而不是 errors.Wrap,丢失了错误堆栈信息
-**Suggestion**:
+**问题描述**: 使用 fmt.Errorf 而不是 errors.Wrap,丢失了错误堆栈信息
+**修改建议**:
 \`\`\`go
 return nil, errors.Wrapf(err, "failed to get user, user_id=%d", id)
 \`\`\`
 
-### Issue 2 - [P0] Rule 1.3.1 Missing WHERE Clause
-**Location**: Line 32
-**Original Code**:
+### 问题 2 - [P0] 规则 1.3.1 缺少 WHERE 条件
+**位置**: 第 32 行
+**原始代码**:
 \`\`\`go
 err := s.db.Find(&user).Error
 \`\`\`
-**Problem**: 缺少显式 WHERE 条件,可能导致查询所有记录
-**Suggestion**:
+**问题描述**: 缺少显式 WHERE 条件,可能导致查询所有记录
+**修改建议**:
 \`\`\`go
 err := s.db.Where("id = ?", id).Take(&user).Error
 \`\`\`

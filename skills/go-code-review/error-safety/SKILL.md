@@ -356,16 +356,20 @@ func BuildResponse(user *User) ([]byte, error) {
 
 ## Output Format
 
+**重要**: 所有问题描述和建议必须使用中文输出。
+
+Report issues in this format (用中文):
+
 ```markdown
-### Issue - [P0] Rule 1.X.Y
-**Location**: path/to/file.go:45
-**Category**: Error Handling / Nil Safety / Concurrency / JSON
-**Original Code**:
+### 问题 - [P0] 规则 1.X.Y
+**位置**: path/to/file.go:45
+**类别**: 错误处理 / 空指针安全 / 并发控制 / JSON处理
+**原始代码**:
 ```go
 return fmt.Errorf("operation failed: %v", err)
 ```
-**Problem**: Using fmt.Errorf loses error stack trace
-**Suggestion**:
+**问题描述**: 使用 fmt.Errorf 会丢失错误堆栈信息
+**修改建议**:
 ```go
 return errors.Wrapf(err, "operation failed")
 ```
