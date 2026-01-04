@@ -93,10 +93,46 @@ Output all findings to `code_review.result` file.
 
 #### 1.2 Nil Pointer Checks
 
-**1.2.1** Must check nil before using pointers
+**1.2.1** Must check nil before dereferencing pointers
 ```go
+// ❌ Problem: Dereferencing without nil check
+value := *ptr
+
+// ✅ Correct: Check before dereferencing
 if ptr != nil {
     value := *ptr
+}
+```
+
+**重要判断规则**:
+- **需要检查**: 当代码对指针进行解引用操作 (使用 `*ptr` 获取值) 时
+- **不需要检查**: 当只是将指针值赋给另一个指针类型时 (如 `dest.Field = src.Field`,两者都是指针)
+- **不需要检查**: 当传递指针给接受指针类型参数的函数时 (由被调用函数负责处理 nil)
+
+```go
+// ✅ 这些情况不需要 nil 检查
+type Source struct {
+    Data *string
+}
+type Dest struct {
+    Field *string  // 指针类型
+}
+
+// Case 1: 指针到指针的赋值
+dest.Field = src.Data  // ✅ 不需要检查,两者都是指针类型
+
+// Case 2: 传递给接受指针的函数
+func ProcessData(data *string) {
+    // 函数内部负责处理 nil
+    if data != nil {
+        // 使用 data
+    }
+}
+ProcessData(src.Data)  // ✅ 不需要检查,由 ProcessData 处理
+
+// ❌ 这些情况需要 nil 检查
+if src.Data != nil {
+    value := *src.Data  // 解引用操作
 }
 ```
 
@@ -345,10 +381,124 @@ log.Error(ctx, "operation failed",
     log.ErrorField(err))  // error field at the end
 ```
 
-**2.2.7** Method entry and exit must log
-- Entry: log input parameters (non-sensitive)
-- Exit: log key execution information
-- Important method calls: log input and return values
+**2.2.7** Layered logging strategy - avoid redundant logs
+遵循分层日志记录原则,避免重复日志:
+
+**外层函数(Service/Handler)**: 记录入参和最终结果
+- 函数入口: 记录关键输入参数 (非敏感)
+- 函数出口: 记录执行结果和关键输出
+- 错误处理: 记录错误日志
+
+**内层函数(Helper/Utility)**: 只记录外部调用结果
+- ✅ 记录: 调用云 API、第三方服务、数据库的返回值
+- ❌ 不记录: 内部逻辑处理过程
+- ❌ 不记录: 错误日志 (使用 error wrap 传递上下文)
+
+**错误传递**: 使用 error wrap,不使用日志
+- ✅ 使用: `errors.Wrapf(err, "context info")`
+- ❌ 避免: `log.Error() + return err` (会导致重复日志)
+
+```go
+// ✅ 正确示例: 分层日志
+// 外层函数 - Service 层
+func (s *UserService) CreateUser(ctx context.Context, req *CreateUserRequest) (*User, error) {
+    // 入口日志: 记录关键入参
+    log.Info(ctx, "creating user",
+        log.String("user_name", req.Name),
+        log.String("email", req.Email))
+
+    // 调用内层函数
+    user, err := s.createUserInternal(ctx, req)
+    if err != nil {
+        // 外层记录错误日志
+        log.Error(ctx, "create user failed",
+            log.String("user_name", req.Name),
+            log.ErrorField(err))
+        return nil, errors.Wrap(err, "create user failed")
+    }
+
+    // 出口日志: 记录结果
+    log.Info(ctx, "user created successfully",
+        log.Int64("user_id", user.ID))
+
+    return user, nil
+}
+
+// 内层函数 - 不记录日志,只 wrap 错误
+func (s *UserService) createUserInternal(ctx context.Context, req *CreateUserRequest) (*User, error) {
+    // ❌ 不记录入口日志 (外层已记录)
+
+    // 验证逻辑
+    if err := s.validateUser(req); err != nil {
+        // ❌ 不记录错误日志,只 wrap
+        return nil, errors.Wrap(err, "validate user failed")
+    }
+
+    // 调用数据库
+    user, err := s.userRepo.Create(ctx, req)
+    if err != nil {
+        // ❌ 不记录错误日志,只 wrap
+        return nil, errors.Wrap(err, "insert user to db failed")
+    }
+
+    // ✅ 记录外部调用结果 (如果有)
+    if req.SendWelcomeEmail {
+        err := s.emailClient.SendWelcome(ctx, user.Email)
+        if err != nil {
+            // 记录外部调用失败 (非致命)
+            log.Warn(ctx, "send welcome email failed",
+                log.String("email", user.Email),
+                log.ErrorField(err))
+        } else {
+            log.Info(ctx, "welcome email sent",
+                log.String("email", user.Email))
+        }
+    }
+
+    // ❌ 不记录出口日志 (外层会记录)
+    return user, nil
+}
+
+// ❌ 错误示例: 多层重复日志
+func (s *UserService) CreateUserBad(ctx context.Context, req *CreateUserRequest) (*User, error) {
+    log.Info(ctx, "creating user") // 外层记录
+
+    user, err := s.createUserInternalBad(ctx, req)
+    if err != nil {
+        log.Error(ctx, "create user failed", log.ErrorField(err)) // 外层记录错误
+        return nil, err
+    }
+
+    log.Info(ctx, "user created") // 外层记录
+    return user, nil
+}
+
+func (s *UserService) createUserInternalBad(ctx context.Context, req *CreateUserRequest) (*User, error) {
+    log.Info(ctx, "internal create user") // ❌ 重复: 内层也记录入口
+
+    if err := s.validateUser(req); err != nil {
+        log.Error(ctx, "validate failed", log.ErrorField(err)) // ❌ 重复: 内层记录错误
+        return nil, errors.Wrap(err, "validate failed")
+    }
+
+    user, err := s.userRepo.Create(ctx, req)
+    if err != nil {
+        log.Error(ctx, "db insert failed", log.ErrorField(err)) // ❌ 重复: 内层记录错误
+        return nil, errors.Wrap(err, "db insert failed")
+    }
+
+    log.Info(ctx, "internal user created") // ❌ 重复: 内层也记录出口
+    return user, nil
+}
+// 结果: 一次操作产生 6 条日志,信息高度重复
+```
+
+**关键原则**:
+1. **单一职责**: 每条信息只在一个层次记录
+2. **外层负责**: Service/Handler 层记录完整的请求-响应链路
+3. **内层简化**: Helper/Utility 层只 wrap 错误,不记录日志
+4. **外部调用例外**: 调用云 API/第三方服务必须记录结果 (便于排查外部问题)
+5. **错误链传递**: 使用 `errors.Wrap` 构建错误上下文,最终在外层统一记录
 
 #### 2.3 Code Organization
 
