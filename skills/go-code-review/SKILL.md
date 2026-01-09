@@ -16,6 +16,21 @@ This skill activates when users need help with:
 - Verifying naming conventions and code structure
 - Analyzing concurrency safety
 
+## Architecture
+
+This skill uses a **parallel multi-agent execution model** for improved efficiency:
+
+- **Orchestrator**: `orchestrator/SKILL.md` - Coordinates the review process
+- **Parallel Agents**: 4 specialized agents run simultaneously for each file:
+  - **GORM Database Review Agent** - Checks database rules (1.3.*)
+  - **Error & Safety Review Agent** - Checks error handling and concurrency (1.1.*, 1.2.*, 1.4.*, 1.5.*)
+  - **Naming & Logging Review Agent** - Checks naming and logging (2.1.*, 2.2.*)
+  - **Organization & Quality Review Agent** - Checks code organization (2.3.*, 2.4.*, 2.5.*, 3.*)
+
+Each agent focuses exclusively on its assigned rules and executes in parallel with others, significantly improving review speed.
+
+For detailed agent configurations, see: `agents/go-code-review/`
+
 ## Review Workflow
 
 ### Step 1: Get Code Changes
@@ -90,6 +105,29 @@ Output all findings to `code_review.result` file.
 - ✅ Use: `return errors.New("error occurred")`
 
 **1.1.4** Errors must be checked and handled immediately
+
+**1.1.5** Error message accuracy - Error messages should describe observed facts, not absolute assertions
+- ✅ Correct: "instance has no subnet, may be terminating"
+- ❌ Wrong: "instance is terminating" (too absolute)
+```go
+// ✅ Correct: Describe facts, hint possible causes
+if instance.SubnetId == nil {
+    log.Warn(ctx, "instance has no subnet, may be terminating",
+        log.String("instance_id", *instance.InstanceId))
+    continue
+}
+```
+
+**1.1.6** Error message format consistency - Use `failed to <action>` format, include sufficient context
+- ✅ Correct: `errors.Wrap(err, "failed to describe aws ec2 instance types")`
+- ❌ Wrong: `errors.Wrap(err, "get aws ec2 instance type list failed")`
+```go
+// ✅ Correct: Unified format
+return nil, errors.Wrap(err, "failed to describe aws ec2 instance types")
+
+// ❌ Wrong: Inconsistent format
+return nil, errors.Wrap(err, "get aws ec2 instance type list failed")
+```
 
 #### 1.2 Nil Pointer Checks
 
@@ -273,6 +311,23 @@ type TagKeyForQuery struct {
 }
 ```
 
+**1.3.9** Serialization strategy - Different layers should use different serialization strategies
+- **Storage layer (Mapping)**: Do not use `omitempty`, preserve all field information
+- **Business layer (Detail)**: Use `omitempty` for optional fields to reduce serialization size
+- **API layer**: Decide based on API specification
+```go
+// ✅ Correct: Different strategies for different layers
+// Storage layer: Preserve all information
+type AliyunECSMapping struct {
+    SystemDiskSize *int64 `json:"system_disk_size"`  // No omitempty
+}
+
+// Business layer: Use omitempty for optional fields
+type AliyunECSDetail struct {
+    AdditionalFields *AdditionalFields `json:"additional_fields,omitempty"`
+}
+```
+
 #### 1.4 Concurrency Control
 
 **1.4.1** Use `recovered.ErrorGroup` for concurrent operations
@@ -352,6 +407,35 @@ type Model struct {
 **2.1.12** Method names for getting lists use GetList or Search
 - ❌ `Get()` - implies single item
 - ✅ `GetList()`, `Search()` - implies multiple items
+
+**2.1.13** Self-documenting names - Function names should clearly describe functionality and data source
+- ✅ `ExtractResourceNameFromTags()` - clearly indicates extracting from tags
+- ❌ `embedAwsEC2Name2ResourceName()` - unclear what "embed" and "2" mean
+- Variable names should express type and purpose (e.g., `privateIPList` for list types)
+- Similar field names should be clearly distinguished (e.g., `PublicIPAddress` vs `PublicIPList`)
+```go
+// ✅ Correct: Self-documenting
+func ExtractResourceNameFromTags(tags []types.Tag) string {
+    // Function name already explains: extract resource name from tags
+}
+
+// ❌ Wrong: Need to read implementation to understand
+func embedAwsEC2Name2ResourceName(tags []types.Tag) string {
+    // Name unclear: what does "embed" mean? what does "2" mean?
+}
+```
+
+**2.1.14** Naming consistency - Use standard terminology abbreviations, maintain consistent naming style
+- Use standard abbreviations: `ARN` not `Arn`
+- Same type entities should follow same naming style
+- Go field names and JSON tags should follow consistent conversion rules
+```go
+// ✅ Correct: Standard terminology
+RoleARN string `json:"role_arn"`  // ARN is standard abbreviation
+
+// ❌ Wrong: Inconsistent terminology
+RoleArn string `json:"role_arn"`  // Should use ARN
+```
 
 #### 2.2 Logging Standards
 
@@ -562,6 +646,73 @@ db.Select("id, name").
     Find(&result)
 ```
 
+**2.3.12** Separation of concerns - Different business concepts should use independent structs
+- Use naming conventions (e.g., `Parent_Child`) to organize related types
+- Embedded structs should be at top level, clearly expressing composition
+```go
+// ✅ Correct: Separation of concerns
+type AliyunECSDetail struct {
+    *BaseMapping  // At top, clearly embedded
+    SystemDisk *SystemDisk
+    DataDisks  []*DataDisk
+}
+
+// ❌ Wrong: Mixed concerns
+type Disk struct {
+    IsSystem bool  // Distinguish by flag, error-prone
+}
+```
+
+**2.3.13** Reduce cognitive load - Related fields should be grouped together
+- **Field grouping**: Related fields together (compute resources: CPU, memory; storage: system disk, data disks; network: VPC, subnet, IP)
+- **Logical grouping**: Use comments for grouping, but don't over-comment
+- **Order consistency**: Same type structs should maintain consistent field ordering
+```go
+// ✅ Correct: Clear logical grouping
+type ResourceDetail struct {
+    // Compute resources
+    CPU    int32 `json:"cpu"`
+    Memory int32 `json:"memory"`
+    
+    // Storage resources
+    SystemDisk *SystemDisk `json:"system_disk"`
+    DataDisks  []*DataDisk `json:"data_disks"`
+}
+
+// ❌ Wrong: Chaotic field ordering
+type ResourceDetail struct {
+    CPU        int32
+    SystemDisk *SystemDisk
+    Memory     int32  // Memory separated
+    DataDisks  []*DataDisk
+}
+```
+
+**2.3.14** Avoid duplication (DRY) - Common information should not be repeated
+- **Base fields**: Common fields should be in base structs, subclasses should not repeat
+- **Constant extraction**: Magic values should be extracted as constants in common packages
+- **Utility functions**: Repeated conversion logic should be extracted as utility functions
+```go
+// ✅ Correct: Avoid duplication
+type BaseMapping struct {
+    ID     string `json:"id"`
+    Name   string `json:"name"`
+    Region string `json:"region"`
+}
+
+type AliyunECSMapping struct {
+    *BaseMapping  // Reuse base fields
+    // Specific fields
+}
+
+// ❌ Wrong: Repeated definition
+type AliyunECSMapping struct {
+    ID     string `json:"id"`     // Duplicate
+    Name   string `json:"name"`   // Duplicate
+    Region string `json:"region"` // Duplicate
+}
+```
+
 #### 2.4 Interface Design
 
 **2.4.1** Interfaces follow minimal principle
@@ -654,6 +805,168 @@ type User struct {
 func ProcessUser(user *User) {
     SaveProfile(user.Profile) // ✅ OK to pass nil if function accepts it
 }
+```
+
+**2.5.9** Types should accurately express business semantics
+- **Nullable modeling**: Use pointer types `*T` for nullable fields, value types `T` for required fields
+- **Type distinction**: Semantically different data should use different types
+- **Judgment basis**: Based on business logic and API documentation, not technical convenience
+```go
+// ✅ Correct: Types clearly express semantics
+type SystemDisk struct {
+    ID   *string `json:"id"`   // May be null
+    Size int     `json:"size"` // Must have value
+}
+
+type DataDisk struct {
+    ID   *string `json:"id"`
+    Size int     `json:"size"`
+}
+
+// ❌ Wrong: Types cannot distinguish semantics
+type Disk struct {
+    Type string  // Distinguish by field, error-prone
+    ID   *string
+}
+```
+
+**2.5.10** Avoid type abuse - Don't sacrifice type safety for technical convenience
+- Different types of data should not be in the same container (e.g., array)
+- Use structs instead of arrays to express composite data
+- Avoid using `interface{}` or `map[string]any` to escape type checking
+```go
+// ✅ Correct: Use struct
+type InstanceSpec struct {
+    Memory int64 `json:"memory"`
+    Cores  int64 `json:"cores"`
+}
+
+// ❌ Wrong: Use array, type unsafe
+spec := []*int64{memory, &cores}  // Cannot distinguish which is memory, which is cores
+```
+
+**2.5.11** Unit consistency - Same type of measurements should use unified units
+- **Unit standardization**: Same type measurements use same unit (memory: GB, time: seconds or milliseconds)
+- **Transparent conversion**: Unit conversion should be done at data entry point, internally use standard units
+- **Document clearly**: Field comments must clearly state units
+```go
+// ✅ Correct: Unified units
+type InstanceSpec struct {
+    Memory float32 `json:"memory"` // Unit: GB
+}
+
+// Conversion done at entry point
+memory := float32(apiResponse.MemoryInMB) / 1024.0  // MB -> GB
+
+// ❌ Wrong: Unit confusion
+type InstanceSpec struct {
+    Memory int32 `json:"memory"`  // Unit unclear, may be MB or GB
+}
+```
+
+**2.5.12** Data source abstraction - Differences between data sources should be handled in adapter layer
+- **Unified interface**: API differences between cloud providers should be handled in adapter layer
+- **Boundary handling**: Boundary conditions (empty string vs nil) should be unified in adapter layer
+- **Error handling**: Different provider error formats should be unified in adapter layer
+```go
+// ✅ Correct: Unified in adapter layer
+func (a *AliyunAdapter) GetNextToken(resp *APIResponse) *string {
+    if resp.NextToken == nil || *resp.NextToken == "" {
+        return nil  // Unified return nil
+    }
+    return resp.NextToken
+}
+
+// Business layer uses unified interface
+token := adapter.GetNextToken(resp)
+if token == nil {
+    break
+}
+```
+
+**2.5.13** Minimalism principle - Only keep necessary code, remove redundant and unused parts
+- **Remove unused code**: Regularly clean unused structs, functions, constants, imports
+- **Remove redundant fields**: Only keep fields truly needed by business
+- **Simplify structure**: Nested structures without clear purpose should be simplified
+
+**Checklist**:
+- [ ] Unused struct definitions
+- [ ] Unused functions
+- [ ] Unused constants
+- [ ] Unused import packages
+- [ ] Duplicate field definitions
+- [ ] Unnecessary nested structures
+
+**2.5.14** Defensive programming - Code should gracefully handle boundary conditions and exceptions
+- **Boundary checks**: Loops and conditionals must consider boundary cases (initial values, nil, empty strings)
+- **Error descriptions**: Error messages should describe actual situation, not absolute assertions
+  - ✅ "instance has no subnet, may be terminating"
+  - ❌ "instance is terminating" (too absolute)
+- **Testability**: New logic must be verified through actual execution
+```go
+// ✅ Correct: Defensive checks
+var nextToken *string = nil
+for {
+    // Processing logic
+    if nextToken == nil || *nextToken == "" {
+        break  // Handle nil and empty string
+    }
+}
+
+// ❌ Wrong: Missing boundary check
+for nextToken != nil {  // If initial value is nil, never executes
+    // ...
+}
+```
+
+**2.5.15** Verifiability - Code correctness should be verifiable through testing
+- **New logic must be tested**: New loops, conditionals must be verified through actual execution
+- **Boundary testing**: Must test boundary conditions (nil, empty strings, empty arrays)
+- **Integration testing**: Logic involving external APIs should have integration tests
+
+**2.5.16** Appropriate abstraction level - Code should operate at appropriate abstraction level
+- **Utility function encapsulation**: Repeated conversion logic should be encapsulated as utility functions
+- **Context awareness**: Tool function usage should consider context (e.g., conversions for different data sources)
+- **Abstraction consistency**: Operations at same abstraction level should use same patterns
+```go
+// ✅ Correct: Use utility functions
+privateIPList := tea.StringSliceValue(instance.VpcAttributes.PrivateIpAddress.IpAddress)
+
+// Or custom conversion function
+func ConvertIPAddresses(ips []*string) []string {
+    result := make([]string, 0, len(ips))
+    for _, ip := range ips {
+        if ip != nil {
+            result = append(result, *ip)
+        }
+    }
+    return result
+}
+```
+
+**2.5.17** Performance optimization principle - Reasonable performance optimization while ensuring readability
+- **Pre-allocate capacity**: If slice capacity is known, should pre-allocate
+- **Avoid unnecessary allocation**: Avoid repeated allocation in loops
+- **Reuse utility functions**: Use optimized utility functions
+```go
+// ✅ Correct: Pre-allocate capacity
+list := make([]string, 0, len(source))
+
+// ❌ Wrong: No pre-allocation
+list := make([]string, 0)  // May cause multiple reallocations
+```
+
+**2.5.18** Field semantics clarity - Field meanings and sources should be clear and explicit
+- **Field comments**: Similar field names should be clearly distinguished through comments
+- **Naming distinction**: Express different meanings through naming
+- **Data source**: Field data sources should be reflected in comments or naming
+```go
+// ✅ Correct: Clear semantics
+// PublicIPAddress is the original public IP field returned by AWS API
+PublicIPAddress string `json:"public_ip_address"`
+
+// PublicIPList is the public IP list collected from all network interfaces
+PublicIPList []string `json:"public_ip_list"`
 ```
 
 ### P2 Rules - Suggested
