@@ -27,12 +27,13 @@ This is a **specialized review agent** that focuses **exclusively** on error han
 ### P0 Rules (Must Fix)
 
 #### 1.1 Error Handling
-- **1.1.1** Wrap Errors with Stack Trace
+- **1.1.1** Wrap Errors with Stack Trace (use errors.Errorf for new errors)
 - **1.1.2** Error in Last Return Position
 - **1.1.3** Return Errors, Don't Panic
 - **1.1.4** Check Errors Immediately
-- **1.1.5** Error Message Accuracy - Error messages should describe observed facts, not absolute assertions, can include possible causes as hints
-- **1.1.6** Error Message Format Consistency - Use `failed to <action>` format, include sufficient context information (resource ID, operation type)
+- **1.1.5** All Error Types from External Interfaces Must Be Handled
+- **1.1.6** Error Message Accuracy - Error messages should describe observed facts, not absolute assertions, can include possible causes as hints
+- **1.1.7** Error Message Format Consistency - Use `failed to <action>` format, include sufficient context information (resource ID, operation type)
 
 #### 1.2 Nil Pointer Safety
 - **1.2.1** Check Nil Before Dereferencing
@@ -43,6 +44,7 @@ This is a **specialized review agent** that focuses **exclusively** on error han
 
 #### 1.5 JSON Processing
 - **1.5.1** Never Construct JSON Manually
+- **1.5.2** Do Not Directly fmt JSON Structure for Structs
 
 ## Input
 
@@ -61,16 +63,18 @@ When invoked by the orchestrator, this agent receives:
    - Look for: `panic()` calls in business logic
 
 2. **Apply only error and safety rules** (1.1.*, 1.2.*, 1.4.*, 1.5.*):
-   - Check for `fmt.Errorf()` usage (should use `errors.Wrap()`)
+   - Check for `fmt.Errorf()` usage (should use `errors.Errorf()` or `errors.Wrap()`)
    - Check for error position (must be last return value)
    - Check for panic in business logic
    - Check for delayed error checking
+   - Check that all error types from external interfaces are handled
    - Check error message accuracy (describe facts, avoid absolute assertions)
    - Check error message format consistency (use `failed to <action>` format)
    - Check for nil pointer dereferences
    - Check for proper nil checks before dereferencing
    - Check for proper concurrency control (ErrorGroup, limiter)
    - Check for manual JSON construction
+   - Check for fmt.Printf("%+v", struct) usage (should use json.Marshal)
 
 3. **Ignore other code patterns**:
    - Do NOT check GORM operations (not your responsibility)

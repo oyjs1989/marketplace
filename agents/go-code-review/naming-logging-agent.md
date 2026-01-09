@@ -37,13 +37,13 @@ This is a **specialized review agent** that focuses **exclusively** on naming co
 - **2.1.10** Interface Names End with -er
 - **2.1.11** Opposite Operations Correspond Strictly
 - **2.1.12** List Methods Use GetList or Search
-- **2.1.13** Self-Documenting Names - Function names should clearly describe functionality and data source (e.g., ExtractResourceNameFromTags), variable names should express type and purpose
-- **2.1.14** Naming Consistency - Use standard terminology abbreviations (e.g., ARN not Arn), maintain consistent naming style for same type of entities
+- **2.1.13** Struct Receiver Names Should Maintain Struct Characteristics
+- **2.1.14** Names Must Match Comments
 
 #### 2.2 Logging Standards
 - **2.2.1** Log Fields Use snake_case
 - **2.2.2** Log Fields Use Explicit Types
-- **2.2.3** Logs Must Include Key Context
+- **2.2.3** Logs Must Include Key Context (with necessary fields for tracking)
 - **2.2.4** Non-Trivial Functions Should Log
 - **2.2.5** Data Layer Must Not Log
 - **2.2.6** Error Logs Must Include ErrorField at End
@@ -76,12 +76,11 @@ When invoked by the orchestrator, this agent receives:
    - Check naming consistency
    - Check variable name descriptiveness
    - Check interface naming (-er suffix)
-   - Check self-documenting names (function names describe functionality and data source)
-   - Check terminology consistency (standard abbreviations like ARN)
-   - Check naming style consistency for same type entities
+   - Check struct receiver names (should maintain struct characteristics)
+   - Check that names match comments
    - Check log field naming (snake_case)
    - Check log field types (explicit types)
-   - Check log context completeness
+   - Check log context completeness (must include necessary fields for tracking)
    - Check logging in data layer (should not log)
    - Check error log ErrorField position
    - Check early return logging

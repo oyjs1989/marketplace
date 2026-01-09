@@ -34,7 +34,11 @@ This is a **specialized review agent** that focuses **exclusively** on GORM data
 - **1.3.6** Explicit GORM Column Tags
 - **1.3.7** All Struct Fields Must Be Used
 - **1.3.8** Struct Field Ordering
-- **1.3.9** Serialization Strategy - Different layers should use different serialization strategies (Mapping layer: no omitempty, Detail layer: use omitempty for optional fields)
+- **1.3.9** Use ID to Locate Records
+- **1.3.10** Use Batch Operations with Lists
+- **1.3.11** Index Naming Conventions
+- **1.3.12** Use orm.Slice for List Operations
+- **1.3.13** Use tx Naming for Transactions
 
 ## Input
 
@@ -59,7 +63,11 @@ When invoked by the orchestrator, this agent receives:
    - Check for missing GORM column tags
    - Check for unused struct fields
    - Check for struct field ordering
-   - Check serialization strategy (Mapping layer should not use omitempty, Detail layer should use omitempty for optional fields)
+   - Check for using ID to locate records (not other fields)
+   - Check for batch operations (should use lists, not loops)
+   - Check for index naming conventions (idx_xxx, uk_xxx)
+   - Check for orm.Slice usage (should use framework utilities)
+   - Check for tx naming in transactions (not db)
 
 3. **Ignore other code patterns**:
    - Do NOT check error handling (not your responsibility)

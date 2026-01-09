@@ -42,15 +42,20 @@ This is a **specialized review agent** that focuses **exclusively** on code orga
 - **2.3.12** Separation of Concerns - Different business concepts should use independent structs
 - **2.3.13** Reduce Cognitive Load - Related fields should be grouped together, maintain consistent field ordering
 - **2.3.14** Avoid Duplication (DRY) - Common fields should be in base structs, extract constants and utility functions
+- **2.3.15** Clear Business Layering with Clear Responsibilities
+- **2.3.16** Interface Definitions Don't Need Separate Package
 
 #### 2.4 Interface Design
 - **2.4.1** Interfaces Follow Minimal Principle
 - **2.4.2** Repeated Parameters in Constructor
-- **2.4.3** ctx Parameter Required If Using ctx
+- **2.4.3** ctx Parameter Required If Using ctx (upper layer must pass if used)
 - **2.4.4** ctx as First Parameter
 - **2.4.5** Parameter Naming Matches Operation
 - **2.4.6** More Than 4 Parameters - Use Struct
 - **2.4.7** Required Parameters Consider Zero Value
+- **2.4.8** Multiple Return Values of Same Type Must Be Named
+- **2.4.9** Avoid Ineffective Encapsulation
+- **2.4.10** Parameter Design Should Be Reasonable
 
 #### 2.5 Code Quality
 - **2.5.1** No Spelling Errors
@@ -71,6 +76,9 @@ This is a **specialized review agent** that focuses **exclusively** on code orga
 - **2.5.16** Appropriate Abstraction Level - Encapsulate repeated conversion logic as utility functions, consider context when using tools
 - **2.5.17** Performance Optimization - Pre-allocate capacity when known, avoid unnecessary allocations in loops
 - **2.5.18** Field Semantics Clarity - Field meanings and sources should be clear, use comments to distinguish similar field names
+- **2.5.9** Use proto Utility Functions
+- **2.5.10** Avoid Duplicate Implementations
+- **2.5.11** Use Cache Reasonably
 
 ### P2 Rules (Suggested Optimization)
 
@@ -83,11 +91,17 @@ This is a **specialized review agent** that focuses **exclusively** on code orga
 - **3.1.6** Utilities in `pkg/`
 - **3.1.7** Initialization in `server/server.go`
 - **3.1.8** Service implementation in `service/`
+- **3.1.9** Use Framework-Provided Utilities
+- **3.1.10** Don't Commit Debug Code
 
 #### 3.2 Testing Standards
-- **3.2.1** Tests Verify Structure, Not Just err != nil
+- **3.2.1** Tests Verify Structure, Not Just err != nil (verify specific business logic)
 - **3.2.2** Test File Naming
 - **3.2.3** Test Function Naming
+- **3.2.4** Unit Tests Should Be Lightweight
+- **3.2.5** Mock Implementation Standards
+- **3.2.6** Interface Test Location Standards
+- **3.2.7** Unit Tests Must Not Start Services
 
 ## Input
 
@@ -124,6 +138,8 @@ When invoked by the orchestrator, this agent receives:
    - Check separation of concerns (independent structs for different business concepts)
    - Check field grouping and ordering consistency
    - Check for code duplication (DRY violations)
+   - Check business layering (pkg cannot call repo, pb cannot directly access db)
+   - Check interface definitions (should not have separate package)
    - Check type semantics (pointer types for nullable fields, distinct types for different semantics)
    - Check for type abuse (different types in same container)
    - Check unit consistency in measurements
@@ -136,7 +152,9 @@ When invoked by the orchestrator, this agent receives:
    - Check field semantics clarity (comments, naming)
    - Check interface minimality
    - Check parameter patterns
-   - Check ctx parameter usage
+   - Check ctx parameter usage (if used, upper layer must pass)
+   - Check for ineffective encapsulation
+   - Check parameter design reasonableness
    - Check function length
    - Check public function comments
    - Check enum constant comments
@@ -145,7 +163,13 @@ When invoked by the orchestrator, this agent receives:
    - Check package naming
    - Check import grouping
    - Check project structure
-   - Check test quality
+   - Check for framework utility usage
+   - Check for debug code in commits
+   - Check test quality (verify specific logic, not just err != nil)
+   - Check unit test lightweight (no application.Run for non-interface tests)
+   - Check mock implementation (in separate files, via interfaces)
+   - Check interface test location (internal/test)
+   - Check unit tests don't start services (use mock database)
 
 3. **Ignore other code patterns**:
    - Do NOT check GORM operations (not your responsibility)
