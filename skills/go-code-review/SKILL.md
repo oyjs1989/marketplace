@@ -1,6 +1,6 @@
 ---
 name: go-code-review
-description: This skill should be used when the user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, error handling patterns, or design philosophies. Orchestrates comprehensive Go code reviews based on FUTU's coding standards (137+ rules) using parallel specialized agents.
+description: This skill should be used when the user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, error handling patterns, or design philosophies. Orchestrates comprehensive Go code reviews based on FUTU's coding standards (138+ rules) using parallel specialized agents.
 version: 3.0.0
 ---
 

@@ -1,10 +1,12 @@
 # FUTU Go Coding Standards
 
-**Version**: 1.2.0
+**Version**: 1.3.0
 **Last Updated**: 2026-01-13
 **Owner**: FUTU Development Team
 
 This document contains the complete Go coding standards for FUTU projects. All specialized review skills reference these standards.
+
+**Total Rules**: 138 (P0: 29, P1: 99, P2: 10)
 
 ## Table of Contents
 
@@ -771,6 +773,138 @@ Not all data needs caching, should decide whether to use cache based on business
 - ✅ Cache should be used for scenarios that truly need performance improvement
 - ❌ Avoid overusing cache
 - ✅ For example, favorites don't need redis cache, can directly read/write db
+
+**2.5.12** Optimize code execution order with Early Return
+Code execution order should follow the "fail fast" principle. Handle error cases and edge conditions first, then process the main logic. This reduces nesting depth and improves code readability.
+
+**核心原则**:
+- ✅ Error conditions and edge cases should return early
+- ✅ Keep the main success path at the lowest indentation level (Golden Path)
+- ✅ Reduce nesting depth to improve readability
+- ❌ Avoid deep nesting of if-else blocks
+
+**错误示例 - 深度嵌套**:
+```go
+func ProcessUser(user *User) error {
+    if user != nil {
+        if user.IsActive {
+            if user.HasPermission("write") {
+                if !user.IsBlocked {
+                    // Main logic deeply nested
+                    return saveUser(user)
+                } else {
+                    return errors.New("user is blocked")
+                }
+            } else {
+                return errors.New("no write permission")
+            }
+        } else {
+            return errors.New("user not active")
+        }
+    } else {
+        return errors.New("user is nil")
+    }
+}
+```
+
+**正确示例 - Early Return**:
+```go
+func ProcessUser(user *User) error {
+    // Handle error cases first (fail fast)
+    if user == nil {
+        return errors.New("user is nil")
+    }
+    if !user.IsActive {
+        return errors.New("user not active")
+    }
+    if !user.HasPermission("write") {
+        return errors.New("no write permission")
+    }
+    if user.IsBlocked {
+        return errors.New("user is blocked")
+    }
+
+    // Main logic at lowest indentation (Golden Path)
+    return saveUser(user)
+}
+```
+
+**优化执行顺序原则**:
+1. **廉价检查优先**: 先执行开销小的检查（如 nil 检查、简单比较）
+2. **常见失败优先**: 先检查最可能失败的条件
+3. **避免无效计算**: 在执行昂贵操作前完成所有前置检查
+
+**执行顺序优化示例**:
+```go
+// ❌ 不佳 - 昂贵操作在前
+func ValidateAndProcess(id int64) error {
+    // 昂贵的数据库查询
+    user, err := db.GetUserByID(id)
+    if err != nil {
+        return err
+    }
+
+    // 简单检查应该在前面
+    if id <= 0 {
+        return errors.New("invalid id")
+    }
+
+    return processUser(user)
+}
+
+// ✅ 正确 - 廉价检查优先
+func ValidateAndProcess(id int64) error {
+    // 先做简单的参数验证
+    if id <= 0 {
+        return errors.New("invalid id")
+    }
+
+    // 参数有效后再执行昂贵操作
+    user, err := db.GetUserByID(id)
+    if err != nil {
+        return err
+    }
+
+    return processUser(user)
+}
+```
+
+**循环中的 Early Continue**:
+```go
+// ❌ 不佳 - 深度嵌套
+for _, user := range users {
+    if user.IsActive {
+        if !user.IsBlocked {
+            if user.Age >= 18 {
+                // Process logic deeply nested
+                processUser(user)
+            }
+        }
+    }
+}
+
+// ✅ 正确 - Early Continue
+for _, user := range users {
+    if !user.IsActive {
+        continue
+    }
+    if user.IsBlocked {
+        continue
+    }
+    if user.Age < 18 {
+        continue
+    }
+
+    // Main logic at lowest indentation
+    processUser(user)
+}
+```
+
+**实际收益**:
+- 📖 **可读性提升**: 主流程一目了然，无需追踪复杂的 if-else 嵌套
+- 🐛 **降低错误率**: 减少嵌套深度，降低逻辑错误风险
+- ⚡ **性能优化**: 快速失败，避免不必要的计算
+- 🔧 **易于维护**: 条件清晰分离，添加新检查更容易
 
 ---
 
