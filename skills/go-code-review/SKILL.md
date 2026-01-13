@@ -1,6 +1,7 @@
 ---
-name: Go Code Review
-description: Performs comprehensive Go code reviews based on FUTU's coding standards. ALWAYS use this when user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, or error handling patterns.
+name: go-code-review
+description: This skill should be used when the user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, or error handling patterns. Orchestrates comprehensive Go code reviews based on FUTU's coding standards using parallel specialized agent skills.
+version: 2.0.0
 ---
 
 # Go Code Review Skill
@@ -20,16 +21,14 @@ This skill activates when users need help with:
 
 This skill uses a **parallel multi-agent execution model** for improved efficiency:
 
-- **Orchestrator**: `orchestrator/SKILL.md` - Coordinates the review process
-- **Parallel Agents**: 4 specialized agents run simultaneously for each file:
-  - **GORM Database Review Agent** - Checks database rules (1.3.*)
-  - **Error & Safety Review Agent** - Checks error handling and concurrency (1.1.*, 1.2.*, 1.4.*, 1.5.*)
-  - **Naming & Logging Review Agent** - Checks naming and logging (2.1.*, 2.2.*)
-  - **Organization & Quality Review Agent** - Checks code organization (2.3.*, 2.4.*, 2.5.*, 3.*)
+- **Main Orchestrator**: This skill coordinates the review process
+- **Parallel Skills**: 4 specialized skills run simultaneously for each file:
+  - **go-code-review-gorm** - Checks database rules (1.3.*)
+  - **go-code-review-error-safety** - Checks error handling and concurrency (1.1.*, 1.2.*, 1.4.*, 1.5.*)
+  - **go-code-review-naming** - Checks naming and logging (2.1.*, 2.2.*)
+  - **go-code-review-organization** - Checks code organization (2.3.*, 2.4.*, 2.5.*, 3.*)
 
-Each agent focuses exclusively on its assigned rules and executes in parallel with others, significantly improving review speed.
-
-For detailed agent configurations, see: `agents/go-code-review/`
+Each skill focuses exclusively on its assigned rules and executes in parallel with others, significantly improving review speed
 
 ## Review Workflow
 

@@ -1,0 +1,1 @@
+../../go-code-review/references/FUTU_GO_STANDARDS.md

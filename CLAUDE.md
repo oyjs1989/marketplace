@@ -94,16 +94,23 @@ git status
 
 ```
 marketplace/
-├── skills/              # Reusable domain expertise
-│   ├── go-code-review/  # Go code review skill (v2.0.0) with 73+ rules
-│   │   ├── SKILL.md     # Main orchestrator
-│   │   ├── orchestrator/# Parallel agent coordination
-│   │   ├── gorm-review/ # Database operations agent
-│   │   ├── error-safety/# Error handling & concurrency agent
-│   │   ├── naming-logging/# Naming & logging standards agent
-│   │   ├── organization/# Code organization agent
-│   │   └── shared/      # FUTU_GO_STANDARDS.md (73+ rules)
-│   └── gitlab-ai-summary/# GitLab MR summary skill
+├── skills/                        # Reusable domain expertise
+│   ├── go-code-review/            # Orchestrator skill (v2.0.0)
+│   │   ├── SKILL.md               # Main orchestrator
+│   │   └── references/            # FUTU_GO_STANDARDS.md (97+ rules)
+│   ├── go-code-review-gorm/       # GORM database review skill
+│   │   ├── SKILL.md
+│   │   └── references/ (symlink)
+│   ├── go-code-review-error-safety/# Error & safety review skill
+│   │   ├── SKILL.md
+│   │   └── references/ (symlink)
+│   ├── go-code-review-naming/     # Naming & logging review skill
+│   │   ├── SKILL.md
+│   │   └── references/ (symlink)
+│   ├── go-code-review-organization/# Organization review skill
+│   │   ├── SKILL.md
+│   │   └── references/ (symlink)
+│   └── gitlab-ai-summary/         # GitLab MR summary skill
 ├── agents/              # Agent configurations (agent.md files)
 ├── commands/            # Custom slash commands (empty, coming soon)
 ├── workflows/           # Multi-step workflows (coming soon)
@@ -120,17 +127,21 @@ marketplace/
 
 ### Skill Architecture Pattern
 
-Skills use a **parallel multi-agent execution model**:
-- **Orchestrator**: Main SKILL.md coordinates the review process
-- **Specialized Agents**: Multiple agents run concurrently on different rule categories
-- **Shared Standards**: Common reference documents (e.g., FUTU_GO_STANDARDS.md)
-- **Modular Design**: Each agent focuses on specific domains for clarity and speed
+Skills use a **parallel multi-agent execution model** with independent skill registration:
+- **Orchestrator Skill**: Main skill coordinates the review process
+- **Agent Skills**: Independent skills that can be invoked separately or via orchestrator
+  - Each agent is a full skill with its own SKILL.md
+  - Registered in marketplace.json for auto-discovery
+  - Can be invoked independently or through orchestrator
+- **Shared References**: Common reference documents in `references/` directories
+- **Modular Design**: Each agent focuses on specific rule categories
 
-Example: Go Code Review uses 4 parallel agents:
-1. GORM Database Review (rule category 1.3.*)
-2. Error & Safety Review (rules 1.1.*, 1.2.*, 1.4.*, 1.5.*)
-3. Naming & Logging Review (rules 2.1.*, 2.2.*)
-4. Organization & Quality Review (rules 2.3.*, 2.4.*, 2.5.*, 3.*)
+Example: Go Code Review uses 5 independent skills:
+1. `go-code-review` - Orchestrator (coordinates parallel execution)
+2. `go-code-review-gorm` - GORM database review (rules 1.3.*)
+3. `go-code-review-error-safety` - Error & safety review (rules 1.1.*, 1.2.*, 1.4.*, 1.5.*)
+4. `go-code-review-naming` - Naming & logging review (rules 2.1.*, 2.2.*)
+5. `go-code-review-organization` - Organization & quality review (rules 2.3.*, 2.4.*, 2.5.*, 3.*)
 
 ## File Naming Conventions
 

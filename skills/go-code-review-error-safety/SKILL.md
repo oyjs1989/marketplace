@@ -1,6 +1,7 @@
 ---
-name: Go Error & Concurrency Safety
-description: Reviews error handling patterns, nil pointer safety, concurrency control, and JSON processing. Ensures robust error propagation with stack traces and safe concurrent operations. Automatically used during Go code reviews.
+name: go-code-review-error-safety
+description: This skill should be used when reviewing Go code for error handling, nil pointer safety, concurrency control, and JSON processing. Focuses exclusively on error handling patterns, safety checks, and concurrent operations (rules 1.1.*, 1.2.*, 1.4.*, 1.5.*).
+version: 2.0.0
 ---
 
 # Go Error & Concurrency Safety Review
@@ -377,4 +378,4 @@ return errors.Wrapf(err, "operation failed")
 
 ## Reference
 
-For complete standards, see: `../shared/FUTU_GO_STANDARDS.md` (Sections 1.1, 1.2, 1.4, 1.5)
+For complete standards, see: `references/FUTU_GO_STANDARDS.md` (Sections 1.1, 1.2, 1.4, 1.5)

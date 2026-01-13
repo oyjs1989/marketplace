@@ -4,23 +4,51 @@
       "name": "go-code-review",
       "source": "./skills/go-code-review",
       "version": "2.0.0",
-      "description": "Comprehensive Go code review with specialized skills for GORM, error handling, naming, logging, and code organization based on FUTU coding standards",
+      "description": "Orchestrator for comprehensive Go code reviews using FUTU coding standards",
       "author": {
         "name": "FUTU Development Team",
         "email": "dev@futunn.com"
-      },
-      "homepage": "https://gitlab.futunn.com/jasonouyang/marketplace",
-      "repository": "https://gitlab.futunn.com/jasonouyang/marketplace",
-      "license": "MIT",
-      "keywords": [
-        "go",
-        "code-review",
-        "gorm",
-        "error-handling",
-        "code-quality",
-        "standards"
-      ],
-      "skills": "./skills/go-code-review/"
+      }
+    },
+    {
+      "name": "go-code-review-gorm",
+      "source": "./skills/go-code-review-gorm",
+      "version": "2.0.0",
+      "description": "GORM database operations review agent for Go code",
+      "author": {
+        "name": "FUTU Development Team",
+        "email": "dev@futunn.com"
+      }
+    },
+    {
+      "name": "go-code-review-error-safety",
+      "source": "./skills/go-code-review-error-safety",
+      "version": "2.0.0",
+      "description": "Error handling and safety review agent for Go code",
+      "author": {
+        "name": "FUTU Development Team",
+        "email": "dev@futunn.com"
+      }
+    },
+    {
+      "name": "go-code-review-naming",
+      "source": "./skills/go-code-review-naming",
+      "version": "2.0.0",
+      "description": "Naming conventions and logging standards review agent for Go code",
+      "author": {
+        "name": "FUTU Development Team",
+        "email": "dev@futunn.com"
+      }
+    },
+    {
+      "name": "go-code-review-organization",
+      "source": "./skills/go-code-review-organization",
+      "version": "2.0.0",
+      "description": "Code organization and quality review agent for Go code",
+      "author": {
+        "name": "FUTU Development Team",
+        "email": "dev@futunn.com"
+      }
     }
   ]
 }

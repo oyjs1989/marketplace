@@ -56,9 +56,18 @@ Each component type has its own usage pattern:
 
 ### Skills
 
-#### Go Code Review v2.0.0
+#### Go Code Review Suite (v2.0.0)
 
-Comprehensive Go code review with 5 specialized sub-skills and 73+ coding rules.
+Comprehensive Go code review based on FUTU's 97+ coding standards with parallel multi-agent execution.
+
+**Main Skill:**
+- `go-code-review` - Orchestrator that coordinates parallel review agents
+
+**Agent Skills:**
+- `go-code-review-gorm` - Database operations and GORM best practices (rules 1.3.*)
+- `go-code-review-error-safety` - Error handling and safety checks (rules 1.1.*, 1.2.*, 1.4.*, 1.5.*)
+- `go-code-review-naming` - Naming conventions and logging standards (rules 2.1.*, 2.2.*)
+- `go-code-review-organization` - Code organization and quality (rules 2.3.*, 2.4.*, 2.5.*, 3.*)
 
 **Quick Start**:
 ```
@@ -66,10 +75,10 @@ Review my Go code
 ```
 
 **Features**:
-- GORM database operations validation
-- Error handling and concurrency safety
-- Naming conventions and logging standards
-- Code organization and quality checks
+- Parallel multi-agent execution for speed
+- 97+ rules across P0/P1/P2 severity levels
+- Chinese output format (FUTU requirement)
+- Comprehensive GORM, error handling, naming, and organization checks
 - Priority-based issue reporting (P0/P1/P2)
 
 **Documentation**: See [skills/go-code-review/SKILL.md](skills/go-code-review/SKILL.md)

@@ -1,6 +1,7 @@
 ---
-name: Go Code Organization & Quality
-description: Reviews code structure, interface design, function quality, project organization, and testing standards. Ensures maintainable, well-organized, and testable Go code. Automatically used during Go code reviews.
+name: go-code-review-organization
+description: This skill should be used when reviewing Go code for code organization, interface design, code quality, and project structure. Focuses exclusively on organizational patterns, interface design principles, and quality practices (rules 2.3.*, 2.4.*, 2.5.*, 3.*).
+version: 2.0.0
 ---
 
 # Go Code Organization & Quality Review
@@ -646,4 +647,4 @@ func CreateUser(ctx context.Context, params *CreateUserParams) error
 
 ## Reference
 
-For complete standards, see: `../shared/FUTU_GO_STANDARDS.md` (Sections 2.3, 2.4, 2.5, 3.*)
+For complete standards, see: `references/FUTU_GO_STANDARDS.md` (Sections 2.3, 2.4, 2.5, 3.*)
