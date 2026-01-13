@@ -115,6 +115,74 @@
           "rules": []
         }
       }
+    },
+    "design_philosophy_bad.go": {
+      "description": "设计哲学规则违规集合 - 8 个设计哲学",
+      "expected_issues": {
+        "P0": {
+          "min": 0,
+          "rules": []
+        },
+        "P1": {
+          "min": 35,
+          "rules": [
+            "4.1.1", "4.1.2", "4.1.3", "4.1.4", "4.1.5",
+            "4.2.1", "4.2.2", "4.2.3", "4.2.4", "4.2.5",
+            "4.3.1", "4.3.2", "4.3.3", "4.3.4", "4.3.5",
+            "4.4.1", "4.4.2", "4.4.3", "4.4.4", "4.4.5",
+            "4.5.1", "4.5.2", "4.5.3", "4.5.4", "4.5.5",
+            "4.6.1", "4.6.2", "4.6.3", "4.6.4", "4.6.5",
+            "4.7.1", "4.7.2", "4.7.3", "4.7.4", "4.7.5",
+            "4.8.1", "4.8.2", "4.8.3", "4.8.4", "4.8.5"
+          ]
+        },
+        "P2": {
+          "min": 0,
+          "rules": []
+        }
+      },
+      "critical_checks": [
+        {
+          "rule": "4.1.1",
+          "pattern": "ConfigLoader interface",
+          "should_detect": "不必要的接口抽象"
+        },
+        {
+          "rule": "4.2.2",
+          "pattern": "pageSize > 100",
+          "should_detect": "魔法数字"
+        },
+        {
+          "rule": "4.3.4",
+          "pattern": "func (s *UserService) UpdateUser",
+          "should_detect": "未使用的方法"
+        },
+        {
+          "rule": "4.4.3",
+          "pattern": "UserRepositoryLarge interface",
+          "should_detect": "大接口"
+        },
+        {
+          "rule": "4.5.1",
+          "pattern": "user.Profile.Address.City",
+          "should_detect": "链式调用"
+        },
+        {
+          "rule": "4.7.1",
+          "pattern": "reflect.ValueOf",
+          "should_detect": "使用反射"
+        },
+        {
+          "rule": "4.8.4",
+          "pattern": "var globalUserRepo",
+          "should_detect": "全局变量"
+        },
+        {
+          "rule": "4.8.5",
+          "pattern": "goto handleError",
+          "should_detect": "使用 goto"
+        }
+      ]
     }
   },
   "rules_coverage": {

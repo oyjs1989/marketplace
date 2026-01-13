@@ -1,6 +1,8 @@
 ---
-name: Go Naming & Logging Standards
-description: Reviews Go naming conventions and logging standards. Checks struct/function names, constants, variable naming, log field formats, and log levels. Ensures consistent and readable code across the codebase.
+name: naming-logging
+description: This agent should be used when reviewing Go code for naming conventions and logging standards. Focuses on struct/function naming, variable naming, constant definitions, and logging format compliance (rules 2.1.*, 2.2.*).
+model: inherit
+color: green
 ---
 
 # Go Naming & Logging Standards Review
@@ -532,4 +534,4 @@ func GetUserByID(userID int64) (*User, error)
 
 ## Reference
 
-For complete standards, see: `../shared/FUTU_GO_STANDARDS.md` (Sections 2.1, 2.2)
+For complete standards, see: `references/FUTU_GO_STANDARDS.md` (Sections 2.1, 2.2)

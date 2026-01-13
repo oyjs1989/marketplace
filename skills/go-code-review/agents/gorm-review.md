@@ -1,6 +1,8 @@
 ---
-name: GORM Database Review
-description: Specialized review for GORM database operations and struct definitions. Checks query patterns, field usage, struct ordering, and database best practices. Automatically used during Go code reviews when GORM code is detected.
+name: gorm-review
+description: This agent should be used when reviewing Go code with GORM database operations, struct definitions with gorm tags, or ORM model definitions. Focuses on database layer code quality and GORM best practices (rules 1.3.*).
+model: inherit
+color: blue
 ---
 
 # GORM Database Review
@@ -297,4 +299,4 @@ db.Select("id, name, email, status").
 
 ## Reference
 
-For complete standards, see: `../shared/FUTU_GO_STANDARDS.md` (Section 1.3)
+For complete standards, see: `references/FUTU_GO_STANDARDS.md` (Section 1.3)

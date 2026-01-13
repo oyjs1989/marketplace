@@ -1,13 +1,13 @@
 ---
 name: Code Organization & Quality Review Agent
-description: Specialized agent for reviewing code structure, interface design, function quality, project organization, and testing standards. This agent ONLY checks organization and quality rules (2.3.*, 2.4.*, 2.5.*, 3.*) and executes in parallel with other review agents.
+description: Specialized agent for reviewing code structure, interface design, function quality, project organization, testing standards, and design philosophies. This agent ONLY checks organization, quality, and design philosophy rules (2.3.*, 2.4.*, 2.5.*, 3.*, 4.*) and executes in parallel with other review agents.
 ---
 
 # Code Organization & Quality Review Agent
 
 ## Agent Purpose
 
-This is a **specialized review agent** that focuses **exclusively** on code organization, interface design, function quality, project structure, and testing standards. It runs **in parallel** with other review agents to improve review efficiency.
+This is a **specialized review agent** that focuses **exclusively** on code organization, interface design, function quality, project structure, testing standards, and design philosophies. It runs **in parallel** with other review agents to improve review efficiency.
 
 ## Scope of Responsibility
 
@@ -17,6 +17,7 @@ This is a **specialized review agent** that focuses **exclusively** on code orga
 - Code quality (规则 2.5.*)
 - Project structure (规则 3.1.*)
 - Testing standards (规则 3.2.*)
+- Design philosophies (规则 4.1.* - 4.8.*)
 
 **This agent does NOT check**:
 - GORM database operations (handled by GORM Agent)
@@ -103,6 +104,64 @@ This is a **specialized review agent** that focuses **exclusively** on code orga
 - **3.2.6** Interface Test Location Standards
 - **3.2.7** Unit Tests Must Not Start Services
 
+### P1 Rules (Strongly Recommended) - Design Philosophies
+
+#### 4.1 KISS (Keep It Simple, Stupid)
+- **4.1.1** 避免不必要的抽象层 (Avoid Unnecessary Abstraction Layers)
+- **4.1.2** 保持函数简单直接 (Keep Functions Simple and Direct)
+- **4.1.3** 避免过度使用 channel 和 goroutine (Avoid Overusing Channels and Goroutines)
+- **4.1.4** 优先使用直接的控制流 (Prefer Direct Control Flow)
+- **4.1.5** 简单的数据结构优于复杂设计 (Simple Data Structures Over Complex Design)
+
+#### 4.2 DRY (Don't Repeat Yourself)
+- **4.2.1** 提取重复的业务逻辑到函数 (Extract Repeated Business Logic)
+- **4.2.2** 使用常量替代魔法数字和字符串 (Use Constants for Magic Numbers and Strings)
+- **4.2.3** 共享数据结构定义 (Share Data Structure Definitions)
+- **4.2.4** 避免重复的错误处理模式 (Avoid Repeated Error Handling Patterns)
+- **4.2.5** 复用已有的工具函数 (Reuse Existing Utility Functions)
+
+#### 4.3 YAGNI (You Aren't Gonna Need It)
+- **4.3.1** 不实现未来可能需要的功能 (Don't Implement Future Features)
+- **4.3.2** 避免过度参数化 (Avoid Over-Parameterization)
+- **4.3.3** 不预先设计扩展点 (Don't Pre-Design Extension Points)
+- **4.3.4** 删除未使用的代码 (Delete Unused Code)
+- **4.3.5** 避免不必要的配置选项 (Avoid Unnecessary Configuration Options)
+
+#### 4.4 SOLID Principles
+- **4.4.1** 单一职责原则 (Single Responsibility Principle - SRP)
+- **4.4.2** 开放封闭原则 (Open-Closed Principle - OCP)
+- **4.4.3** 接口隔离原则 (Interface Segregation Principle - ISP)
+- **4.4.4** 依赖反转原则 (Dependency Inversion Principle - DIP)
+- **4.4.5** 里氏替换原则 (Liskov Substitution Principle - LSP)
+
+#### 4.5 LoD (Law of Demeter)
+- **4.5.1** 避免链式调用 (Avoid Method Chaining on Objects)
+- **4.5.2** 不访问返回对象的内部 (Don't Access Internals of Returned Objects)
+- **4.5.3** 限制函数的依赖范围 (Limit Function Dependency Scope)
+- **4.5.4** 使用依赖注入而非直接创建 (Use Dependency Injection)
+- **4.5.5** 减少对象间的直接耦合 (Reduce Direct Coupling Between Objects)
+
+#### 4.6 Composition Over Inheritance
+- **4.6.1** 使用嵌入(embedding)实现代码复用 (Use Embedding for Code Reuse)
+- **4.6.2** 通过接口组合实现多态 (Use Interface Composition for Polymorphism)
+- **4.6.3** 优先组合而非扩展 (Prefer Composition Over Extension)
+- **4.6.4** 避免深层嵌入层次 (Avoid Deep Embedding Hierarchy)
+- **4.6.5** 小接口 + 组合 > 大接口 (Small Interfaces + Composition > Large Interfaces)
+
+#### 4.7 Less is Exponentially More
+- **4.7.1** 避免使用反射 (Avoid Reflection)
+- **4.7.2** 不要滥用泛型 (Don't Overuse Generics)
+- **4.7.3** 优先使用标准库 (Prefer Standard Library)
+- **4.7.4** 避免过度抽象 (Avoid Over-Abstraction)
+- **4.7.5** 保持包小而专注 (Keep Packages Small and Focused)
+
+#### 4.8 Explicit Over Implicit
+- **4.8.1** 显式错误处理 (Explicit Error Handling)
+- **4.8.2** 显式类型转换 (Explicit Type Conversion)
+- **4.8.3** 显式初始化 (Explicit Initialization)
+- **4.8.4** 显式依赖声明 (Explicit Dependency Declaration)
+- **4.8.5** 显式控制流 (Explicit Control Flow)
+
 ## Input
 
 When invoked by the orchestrator, this agent receives:
@@ -112,7 +171,7 @@ When invoked by the orchestrator, this agent receives:
 
 ## Execution Instructions
 
-1. **Scan the file** for organization and quality patterns:
+1. **Scan the file** for organization, quality, and design philosophy patterns:
    - Look for: Struct definitions, embedded structs
    - Look for: Interface definitions
    - Look for: Function signatures, parameter lists
@@ -122,8 +181,15 @@ When invoked by the orchestrator, this agent receives:
    - Look for: Function length, comments
    - Look for: Import statements
    - Look for: Test files and test functions
+   - Look for: Unnecessary abstractions, interfaces with single implementations
+   - Look for: Repeated code patterns
+   - Look for: Unused functions, commented code
+   - Look for: Deep chaining (a.B().C().D())
+   - Look for: Struct embedding patterns
 
-2. **Apply only organization and quality rules** (2.3.*, 2.4.*, 2.5.*, 3.*):
+2. **Apply organization, quality, and design philosophy rules** (2.3.*, 2.4.*, 2.5.*, 3.*, 4.*):
+
+   **Organization & Quality (2.3.*, 2.4.*, 2.5.*, 3.*)**:
    - Check embedded struct position
    - Check JSON tag relationships
    - Check map/slice initialization
@@ -170,6 +236,16 @@ When invoked by the orchestrator, this agent receives:
    - Check mock implementation (in separate files, via interfaces)
    - Check interface test location (internal/test)
    - Check unit tests don't start services (use mock database)
+
+   **Design Philosophies (4.1.* - 4.8.*)**:
+   - **KISS**: Unnecessary interfaces with single implementations, overly complex functions (>50 lines), unnecessary goroutines for simple tasks, complex function chains, map[string]interface{} instead of struct
+   - **DRY**: Repeated validation logic, magic numbers/strings without constants, duplicated struct fields, repeated error handling, reimplemented utility functions
+   - **YAGNI**: Future features without callers, unnecessary parameters, premature abstraction, unused/commented code, unnecessary configuration
+   - **SOLID**: Multiple responsibilities in one struct, switch-case extension instead of interfaces, large interfaces, direct dependency on concrete types, interface contract violations
+   - **LoD**: Deep chaining (a.B().C().D()), accessing internals of returned objects, excessive dependency scope, internal dependency creation, tight coupling to concrete implementations
+   - **Composition**: Repeated fields instead of embedding, large interfaces instead of composition, overuse of embedding, deep embedding hierarchy (>2 levels), single large interface instead of multiple small ones
+   - **Less is More**: Reflection usage, generic overuse, unnecessary dependencies, over-abstraction, large packages
+   - **Explicit Over Implicit**: Panic/recover for error handling, implicit type conversions, relying on zero values, global variables, goto statements
 
 3. **Ignore other code patterns**:
    - Do NOT check GORM operations (not your responsibility)
@@ -218,5 +294,5 @@ If no issues are found in your scope, output:
 
 ## Reference
 
-For complete organization and quality rules, see: `skills/go-code-review/organization/SKILL.md`
+For complete organization, quality, and design philosophy rules, see: `skills/go-code-review/references/FUTU_GO_STANDARDS.md` (Sections 2.3, 2.4, 2.5, 3.*, 4.*)
 

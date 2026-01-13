@@ -1,6 +1,7 @@
 ---
-name: Go Code Review
-description: Performs comprehensive Go code reviews based on FUTU's coding standards. ALWAYS use this when user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, or error handling patterns.
+name: go-code-review
+description: This skill should be used when the user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, error handling patterns, or design philosophies. Orchestrates comprehensive Go code reviews based on FUTU's coding standards (138+ rules) using parallel specialized agents.
+version: 3.0.0
 ---
 
 # Go Code Review Skill
@@ -18,18 +19,56 @@ This skill activates when users need help with:
 
 ## Architecture
 
-This skill uses a **parallel multi-agent execution model** for improved efficiency:
+This plugin uses a **unified orchestration model** with automatic agent selection:
 
-- **Orchestrator**: `orchestrator/SKILL.md` - Coordinates the review process
-- **Parallel Agents**: 4 specialized agents run simultaneously for each file:
-  - **GORM Database Review Agent** - Checks database rules (1.3.*)
-  - **Error & Safety Review Agent** - Checks error handling and concurrency (1.1.*, 1.2.*, 1.4.*, 1.5.*)
-  - **Naming & Logging Review Agent** - Checks naming and logging (2.1.*, 2.2.*)
-  - **Organization & Quality Review Agent** - Checks code organization (2.3.*, 2.4.*, 2.5.*, 3.*)
+- **Main Orchestrator**: This skill (go-code-review) coordinates the review process
+- **4 Specialist Agents** in `agents/` directory:
+  - **gorm-review** (blue) - Database operations and GORM best practices (rules 1.3.*)
+  - **error-safety** (red) - Error handling and concurrency safety (rules 1.1.*, 1.2.*, 1.4.*, 1.5.*)
+  - **naming-logging** (green) - Naming conventions and logging standards (rules 2.1.*, 2.2.*)
+  - **organization** (purple) - Code organization, quality, and design philosophies (rules 2.3.*, 2.4.*, 2.5.*, 3.*, 4.*)
 
-Each agent focuses exclusively on its assigned rules and executes in parallel with others, significantly improving review speed.
+**Key Features**:
+- **Smart Agent Selection**: Automatically determines which agents apply based on code changes
+- **Parallel Execution**: All applicable agents run simultaneously for maximum speed
+- **Single Invocation**: One command triggers comprehensive multi-agent review
+- **137+ Rules**: Complete FUTU Go coding standards coverage (includes 8 design philosophies)
 
-For detailed agent configurations, see: `agents/go-code-review/`
+## Automatic Agent Selection
+
+When invoked, this skill automatically:
+
+1. **Analyzes Changed Files**: Uses `git diff --name-only` to identify modified Go files
+2. **Scans Code Content**: Detects patterns that indicate which agents should run:
+   - GORM patterns (gorm tags, `db.Model`, `db.Where`) → **gorm-review agent**
+   - Error handling (`error` returns, nil checks, `errors.Wrap`) → **error-safety agent**
+   - Naming/logging (`func`, `type`, `log.Info`) → **naming-logging agent**
+   - Structure (interfaces, function organization) → **organization agent**
+3. **Launches Agents in Parallel**: Selected agents run simultaneously
+4. **Aggregates Results**: Collects and merges findings by priority (P0/P1/P2)
+5. **Delivers Report**: Unified review with Chinese output (per FUTU standards)
+
+**Manual Override**: You can explicitly invoke individual agents:
+```
+Use gorm-review agent
+Use error-safety agent
+Use naming-logging agent
+Use organization agent
+```
+
+## Agent Coordination
+
+**Default Behavior**: Parallel execution for speed
+- All 4 agents launch simultaneously
+- Each agent checks only its assigned rule categories
+- Results merge after all agents complete
+- ~4x faster than sequential execution
+
+**Agent Independence**:
+- Agents share no state
+- Each focuses on specific rule categories
+- No conflicts due to clear boundaries
+- Can be invoked separately or through orchestrator
 
 ## Review Workflow
 
