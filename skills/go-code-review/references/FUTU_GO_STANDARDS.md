@@ -1,7 +1,7 @@
 # FUTU Go Coding Standards
 
-**Version**: 1.1.0
-**Last Updated**: 2025-01-09
+**Version**: 1.2.0
+**Last Updated**: 2026-01-13
 **Owner**: FUTU Development Team
 
 This document contains the complete Go coding standards for FUTU projects. All specialized review skills reference these standards.
@@ -24,6 +24,13 @@ This document contains the complete Go coding standards for FUTU projects. All s
   - [3.1 Project Structure](#31-project-structure)
   - [3.2 Testing Standards](#32-testing-standards)
   - [3.3 Configuration Management](#33-configuration-management)
+- [P1 Rules - Design Philosophies](#p1-rules---design-philosophies)
+  - [4.1 KISS Principle](#41-kiss-principle)
+  - [4.2 DRY Principle](#42-dry-principle)
+  - [4.3 YAGNI Principle](#43-yagni-principle)
+  - [4.4 SOLID Principles](#44-solid-principles)
+  - [4.5 Law of Demeter](#45-law-of-demeter)
+  - [4.6 Composition Over Inheritance](#46-composition-over-inheritance)
 
 ---
 

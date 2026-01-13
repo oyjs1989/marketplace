@@ -1,7 +1,8 @@
 ---
-name: go-code-review-organization
-description: This skill should be used when reviewing Go code for code organization, interface design, code quality, and project structure. Focuses exclusively on organizational patterns, interface design principles, and quality practices (rules 2.3.*, 2.4.*, 2.5.*, 3.*).
-version: 2.0.0
+name: organization
+description: This agent should be used when reviewing Go code for code organization, interface design, code quality, and project structure. Focuses on organizational patterns, interface design principles, and quality practices (rules 2.3.*, 2.4.*, 2.5.*, 3.*).
+model: inherit
+color: purple
 ---
 
 # Go Code Organization & Quality Review

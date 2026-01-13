@@ -56,32 +56,38 @@ Each component type has its own usage pattern:
 
 ### Skills
 
-#### Go Code Review Suite (v2.0.0)
+#### Go Code Review Plugin (v3.0.0)
 
-Comprehensive Go code review based on FUTU's 97+ coding standards with parallel multi-agent execution.
-
-**Main Skill:**
-- `go-code-review` - Orchestrator that coordinates parallel review agents
-
-**Agent Skills:**
-- `go-code-review-gorm` - Database operations and GORM best practices (rules 1.3.*)
-- `go-code-review-error-safety` - Error handling and safety checks (rules 1.1.*, 1.2.*, 1.4.*, 1.5.*)
-- `go-code-review-naming` - Naming conventions and logging standards (rules 2.1.*, 2.2.*)
-- `go-code-review-organization` - Code organization and quality (rules 2.3.*, 2.4.*, 2.5.*, 3.*)
+Unified Go code review plugin with automatic agent orchestration based on FUTU's 97+ coding standards.
 
 **Quick Start**:
 ```
 Review my Go code
 ```
 
-**Features**:
-- Parallel multi-agent execution for speed
-- 97+ rules across P0/P1/P2 severity levels
-- Chinese output format (FUTU requirement)
-- Comprehensive GORM, error handling, naming, and organization checks
-- Priority-based issue reporting (P0/P1/P2)
+**One command triggers everything** - the plugin automatically:
+- Analyzes your code changes
+- Selects applicable specialist agents
+- Runs all agents in parallel
+- Delivers comprehensive findings in Chinese
 
-**Documentation**: See [skills/go-code-review/SKILL.md](skills/go-code-review/SKILL.md)
+**4 Specialist Agents**:
+- **gorm-review** (blue) - Database operations and GORM best practices
+- **error-safety** (red) - Error handling and concurrency safety
+- **naming-logging** (green) - Naming conventions and logging standards
+- **organization** (purple) - Code organization and quality
+
+**Features**:
+- **Smart Auto-Selection**: Agents automatically triggered based on code patterns
+- **Single Invocation**: One call reviews with all 97+ rules
+- **Parallel Execution**: All agents run simultaneously for maximum speed
+- **Chinese Output**: All findings reported in Chinese (FUTU requirement)
+- **Priority Classification**: P0 (must fix), P1 (recommended), P2 (suggested)
+- **Manual Override**: Can invoke individual agents when needed
+
+**Documentation**:
+- Main: [skills/go-code-review/README.md](skills/go-code-review/README.md)
+- Details: [skills/go-code-review/SKILL.md](skills/go-code-review/SKILL.md)
 
 **Test**: Run `Review test-cases/go-code-review/bad/user_service_bad.go` to see it in action.
 

@@ -1,7 +1,8 @@
 ---
-name: go-code-review-gorm
-description: This skill should be used when reviewing Go code containing GORM database operations, struct definitions with gorm tags, database query builders, or ORM model definitions. Focuses exclusively on database layer code quality and GORM best practices (rules 1.3.*).
-version: 2.0.0
+name: gorm-review
+description: This agent should be used when reviewing Go code with GORM database operations, struct definitions with gorm tags, or ORM model definitions. Focuses on database layer code quality and GORM best practices (rules 1.3.*).
+model: inherit
+color: blue
 ---
 
 # GORM Database Review

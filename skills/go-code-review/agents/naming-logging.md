@@ -1,7 +1,8 @@
 ---
-name: go-code-review-naming
-description: This skill should be used when reviewing Go code for naming conventions and logging standards. Focuses exclusively on struct/function naming, variable naming, constant definitions, and logging format compliance (rules 2.1.*, 2.2.*).
-version: 2.0.0
+name: naming-logging
+description: This agent should be used when reviewing Go code for naming conventions and logging standards. Focuses on struct/function naming, variable naming, constant definitions, and logging format compliance (rules 2.1.*, 2.2.*).
+model: inherit
+color: green
 ---
 
 # Go Naming & Logging Standards Review

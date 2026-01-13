@@ -1,0 +1,9 @@
+{
+  "name": "go-code-review",
+  "version": "3.0.0",
+  "description": "Comprehensive Go code review with parallel specialist agents based on FUTU's 97+ coding standards",
+  "author": {
+    "name": "FUTU Development Team",
+    "email": "dev@futunn.com"
+  }
+}

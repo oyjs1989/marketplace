@@ -1,7 +1,8 @@
 ---
-name: go-code-review-error-safety
-description: This skill should be used when reviewing Go code for error handling, nil pointer safety, concurrency control, and JSON processing. Focuses exclusively on error handling patterns, safety checks, and concurrent operations (rules 1.1.*, 1.2.*, 1.4.*, 1.5.*).
-version: 2.0.0
+name: error-safety
+description: This agent should be used when reviewing Go code for error handling, nil pointer safety, concurrency control, and JSON processing. Focuses on error handling patterns, safety checks, and concurrent operations (rules 1.1.*, 1.2.*, 1.4.*, 1.5.*).
+model: inherit
+color: red
 ---
 
 # Go Error & Concurrency Safety Review

@@ -3,48 +3,8 @@
     {
       "name": "go-code-review",
       "source": "./skills/go-code-review",
-      "version": "2.0.0",
-      "description": "Orchestrator for comprehensive Go code reviews using FUTU coding standards",
-      "author": {
-        "name": "FUTU Development Team",
-        "email": "dev@futunn.com"
-      }
-    },
-    {
-      "name": "go-code-review-gorm",
-      "source": "./skills/go-code-review-gorm",
-      "version": "2.0.0",
-      "description": "GORM database operations review agent for Go code",
-      "author": {
-        "name": "FUTU Development Team",
-        "email": "dev@futunn.com"
-      }
-    },
-    {
-      "name": "go-code-review-error-safety",
-      "source": "./skills/go-code-review-error-safety",
-      "version": "2.0.0",
-      "description": "Error handling and safety review agent for Go code",
-      "author": {
-        "name": "FUTU Development Team",
-        "email": "dev@futunn.com"
-      }
-    },
-    {
-      "name": "go-code-review-naming",
-      "source": "./skills/go-code-review-naming",
-      "version": "2.0.0",
-      "description": "Naming conventions and logging standards review agent for Go code",
-      "author": {
-        "name": "FUTU Development Team",
-        "email": "dev@futunn.com"
-      }
-    },
-    {
-      "name": "go-code-review-organization",
-      "source": "./skills/go-code-review-organization",
-      "version": "2.0.0",
-      "description": "Code organization and quality review agent for Go code",
+      "version": "3.0.0",
+      "description": "Unified Go code review plugin with 4 specialist agents based on FUTU's 97+ coding standards",
       "author": {
         "name": "FUTU Development Team",
         "email": "dev@futunn.com"

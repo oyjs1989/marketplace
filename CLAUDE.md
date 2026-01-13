@@ -127,21 +127,24 @@ marketplace/
 
 ### Skill Architecture Pattern
 
-Skills use a **parallel multi-agent execution model** with independent skill registration:
-- **Orchestrator Skill**: Main skill coordinates the review process
-- **Agent Skills**: Independent skills that can be invoked separately or via orchestrator
-  - Each agent is a full skill with its own SKILL.md
-  - Registered in marketplace.json for auto-discovery
+Go Code Review plugin uses a **unified orchestration model** with automatic agent selection:
+- **Main Orchestrator**: Single skill coordinates comprehensive review
+- **4 Specialist Agents**: Independent agents in `agents/` directory
+  - Each agent has its own agent.md file with specific focus
+  - Agents auto-triggered based on code patterns
   - Can be invoked independently or through orchestrator
-- **Shared References**: Common reference documents in `references/` directories
-- **Modular Design**: Each agent focuses on specific rule categories
+- **Shared References**: FUTU_GO_STANDARDS.md with 97+ rules
+- **Smart Selection**: Automatically determines which agents apply
+- **Parallel Execution**: All agents run simultaneously for speed
 
-Example: Go Code Review uses 5 independent skills:
-1. `go-code-review` - Orchestrator (coordinates parallel execution)
-2. `go-code-review-gorm` - GORM database review (rules 1.3.*)
-3. `go-code-review-error-safety` - Error & safety review (rules 1.1.*, 1.2.*, 1.4.*, 1.5.*)
-4. `go-code-review-naming` - Naming & logging review (rules 2.1.*, 2.2.*)
-5. `go-code-review-organization` - Organization & quality review (rules 2.3.*, 2.4.*, 2.5.*, 3.*)
+Example: Go Code Review Plugin (v3.0.0):
+1. **go-code-review** - Main orchestrator with automatic agent selection
+2. **gorm-review** agent (blue) - GORM database review (rules 1.3.*)
+3. **error-safety** agent (red) - Error & safety review (rules 1.1.*, 1.2.*, 1.4.*, 1.5.*)
+4. **naming-logging** agent (green) - Naming & logging review (rules 2.1.*, 2.2.*)
+5. **organization** agent (purple) - Organization & quality review (rules 2.3.*, 2.4.*, 2.5.*, 3.*)
+
+**Key Benefit**: Single invocation (`Review my Go code`) automatically triggers all applicable agents
 
 ## File Naming Conventions
 
