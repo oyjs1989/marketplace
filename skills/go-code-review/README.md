@@ -1,6 +1,6 @@
 # Go Code Review Plugin
 
-Comprehensive Go code review with 4 specialist agents and 97+ FUTU coding standards.
+Comprehensive Go code review with 4 specialist agents and 137+ FUTU coding standards.
 
 ## Quick Start
 

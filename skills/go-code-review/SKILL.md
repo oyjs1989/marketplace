@@ -1,6 +1,6 @@
 ---
 name: go-code-review
-description: This skill should be used when the user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, or error handling patterns. Orchestrates comprehensive Go code reviews based on FUTU's coding standards using parallel specialized agents.
+description: This skill should be used when the user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, error handling patterns, or design philosophies. Orchestrates comprehensive Go code reviews based on FUTU's coding standards (137+ rules) using parallel specialized agents.
 version: 3.0.0
 ---
 
@@ -26,13 +26,13 @@ This plugin uses a **unified orchestration model** with automatic agent selectio
   - **gorm-review** (blue) - Database operations and GORM best practices (rules 1.3.*)
   - **error-safety** (red) - Error handling and concurrency safety (rules 1.1.*, 1.2.*, 1.4.*, 1.5.*)
   - **naming-logging** (green) - Naming conventions and logging standards (rules 2.1.*, 2.2.*)
-  - **organization** (purple) - Code organization and quality (rules 2.3.*, 2.4.*, 2.5.*, 3.*)
+  - **organization** (purple) - Code organization, quality, and design philosophies (rules 2.3.*, 2.4.*, 2.5.*, 3.*, 4.*)
 
 **Key Features**:
 - **Smart Agent Selection**: Automatically determines which agents apply based on code changes
 - **Parallel Execution**: All applicable agents run simultaneously for maximum speed
 - **Single Invocation**: One command triggers comprehensive multi-agent review
-- **97+ Rules**: Complete FUTU Go coding standards coverage
+- **137+ Rules**: Complete FUTU Go coding standards coverage (includes 8 design philosophies)
 
 ## Automatic Agent Selection
 
