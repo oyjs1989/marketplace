@@ -1,12 +1,12 @@
 # FUTU Go Coding Standards
 
-**Version**: 1.3.0
-**Last Updated**: 2026-01-13
+**Version**: 2.0.0
+**Last Updated**: 2026-01-20
 **Owner**: FUTU Development Team
 
 This document contains the complete Go coding standards for FUTU projects. All specialized review skills reference these standards.
 
-**Total Rules**: 138 (P0: 29, P1: 99, P2: 10)
+**Total Rules**: 141 (P0: 38, P1: 93, P2: 10)
 
 ## Table of Contents
 
@@ -16,6 +16,7 @@ This document contains the complete Go coding standards for FUTU projects. All s
   - [1.3 Database Operations (GORM)](#13-database-operations-gorm)
   - [1.4 Concurrency Control](#14-concurrency-control)
   - [1.5 JSON Processing](#15-json-processing)
+  - [1.6 Code Simplicity](#16-code-simplicity)
 - [P1 Rules - Strongly Recommended](#p1-rules---strongly-recommended)
   - [2.1 Naming Conventions](#21-naming-conventions)
   - [2.2 Logging Standards](#22-logging-standards)
@@ -69,6 +70,29 @@ When calling external interfaces or APIs, all error types and error codes return
 - Calling third-party APIs or service interfaces
 - Processing error responses from external systems
 - Scenarios requiring distinction between different error types
+
+**1.1.6** Use appropriate error creation methods
+When creating new errors, choose the appropriate method based on whether parameters are needed.
+- ✅ With parameters: Use `errors.Errorf("message with %s", param)`
+- ✅ Plain text: Use `errors.New("message")`
+- ❌ Forbidden: Use `fmt.Errorf()` for creating errors
+
+```go
+// ✅ Correct: Use errors.New for plain text
+if platformDetails == "" {
+    return errors.New("platform details is empty")
+}
+
+// ✅ Correct: Use errors.Errorf with parameters
+if osType == "" {
+    return errors.Errorf("os type not found for platform details: %s", platformDetails)
+}
+
+// ❌ Incorrect: Use fmt.Errorf
+if osType == "" {
+    return fmt.Errorf("os type not found for platform details: %s", platformDetails)
+}
+```
 
 ---
 
@@ -320,6 +344,290 @@ log.Info(string(data))
 // ❌ Incorrect: Use fmt to print struct
 log.Info(fmt.Sprintf("%+v", user))
 ```
+
+---
+
+### 1.6 Code Simplicity
+
+**1.6.1** Avoid magic numbers and strings
+
+**1.6.2** Allow pointer passing when data is already pointer type
+```go
+// ✅ Data is already pointer, pass directly
+type User struct {
+    Profile *UserProfile
+}
+
+func ProcessUser(user *User) {
+    SaveProfile(user.Profile) // ✅ OK to pass nil if function accepts it
+}
+```
+
+**1.6.3** Use proto utility functions
+When constructing protobuf messages, should use `proto.XXX()` utility functions.
+- ✅ Construct pb messages using `proto.XXX()`, e.g., `proto.Int64(roleDepart.ID)`
+- ✅ Use `proto.String()`, `proto.Int64()` and other methods
+- ❌ Avoid direct assignment, using utility functions is safer
+
+```go
+// ✅ Correct: Use proto utility functions
+pb := &UserPB{
+    ID:   proto.Int64(user.ID),
+    Name: proto.String(user.Name),
+}
+
+// ❌ Incorrect: Direct assignment
+pb := &UserPB{
+    ID:   &user.ID,  // May have issues
+    Name: &user.Name,
+}
+```
+
+**1.6.4** Avoid duplicate implementations
+If there are already other conversion functions or utility functions, should reuse them instead of re-implementing.
+- ✅ If there are already other conversion functions, should use them
+- ❌ Avoid re-implementing the same functionality
+- ✅ Maintain code consistency
+
+**1.6.5** Use cache reasonably
+Not all data needs caching, should decide whether to use cache based on business requirements.
+- ✅ Cache should be used for scenarios that truly need performance improvement
+- ❌ Avoid overusing cache
+- ✅ For example, favorites don't need redis cache, can directly read/write db
+
+**1.6.6** Avoid unnecessary pointer operations
+Avoid unnecessary "address-of followed by dereference" patterns. Use values directly when possible.
+
+**核心原则**:
+- ✅ Use values directly when pointer conversion is unnecessary
+- ❌ Avoid `&variable` followed immediately by `*variable` pattern
+
+**错误示例**:
+```go
+// ❌ 不必要的指针操作
+approvalCode = &approvalCodeStr
+log.String("approval_code", *approvalCode)  // 立即解引用
+```
+
+**正确示例**:
+```go
+// ✅ 直接使用值
+approvalCode := approvalCodeStr
+log.String("approval_code", approvalCode)
+```
+
+**例外**: 需要表达"可选"语义(nil判断)或需要修改原值时,使用指针有意义。
+
+**1.6.7** Optimize code execution order with Early Return
+Code execution order should follow the "fail fast" principle. Handle error cases and edge conditions first, then process the main logic. This reduces nesting depth and improves code readability.
+
+**核心原则**:
+- ✅ Error conditions and edge cases should return early
+- ✅ Keep the main success path at the lowest indentation level (Golden Path)
+- ✅ Reduce nesting depth to improve readability
+- ❌ Avoid deep nesting of if-else blocks
+
+**错误示例 - 深度嵌套**:
+```go
+func ProcessUser(user *User) error {
+    if user != nil {
+        if user.IsActive {
+            if user.HasPermission("write") {
+                if !user.IsBlocked {
+                    // Main logic deeply nested
+                    return saveUser(user)
+                } else {
+                    return errors.New("user is blocked")
+                }
+            } else {
+                return errors.New("no write permission")
+            }
+        } else {
+            return errors.New("user not active")
+        }
+    } else {
+        return errors.New("user is nil")
+    }
+}
+```
+
+**正确示例 - Early Return**:
+```go
+func ProcessUser(user *User) error {
+    // Handle error cases first (fail fast)
+    if user == nil {
+        return errors.New("user is nil")
+    }
+    if !user.IsActive {
+        return errors.New("user not active")
+    }
+    if !user.HasPermission("write") {
+        return errors.New("no write permission")
+    }
+    if user.IsBlocked {
+        return errors.New("user is blocked")
+    }
+
+    // Main logic at lowest indentation (Golden Path)
+    return saveUser(user)
+}
+```
+
+**优化执行顺序原则**:
+1. **廉价检查优先**: 先执行开销小的检查（如 nil 检查、简单比较）
+2. **常见失败优先**: 先检查最可能失败的条件
+3. **避免无效计算**: 在执行昂贵操作前完成所有前置检查
+
+**执行顺序优化示例**:
+```go
+// ❌ 不佳 - 昂贵操作在前
+func ValidateAndProcess(id int64) error {
+    // 昂贵的数据库查询
+    user, err := db.GetUserByID(id)
+    if err != nil {
+        return err
+    }
+
+    // 简单检查应该在前面
+    if id <= 0 {
+        return errors.New("invalid id")
+    }
+
+    return processUser(user)
+}
+
+// ✅ 正确 - 廉价检查优先
+func ValidateAndProcess(id int64) error {
+    // 先做简单的参数验证
+    if id <= 0 {
+        return errors.New("invalid id")
+    }
+
+    // 参数有效后再执行昂贵操作
+    user, err := db.GetUserByID(id)
+    if err != nil {
+        return err
+    }
+
+    return processUser(user)
+}
+```
+
+**循环中的 Early Continue**:
+```go
+// ❌ 不佳 - 深度嵌套
+for _, user := range users {
+    if user.IsActive {
+        if !user.IsBlocked {
+            if user.Age >= 18 {
+                // Process logic deeply nested
+                processUser(user)
+            }
+        }
+    }
+}
+
+// ✅ 正确 - Early Continue
+for _, user := range users {
+    if !user.IsActive {
+        continue
+    }
+    if user.IsBlocked {
+        continue
+    }
+    if user.Age < 18 {
+        continue
+    }
+
+    // Main logic at lowest indentation
+    processUser(user)
+}
+```
+
+**实际收益**:
+- 📖 **可读性提升**: 主流程一目了然，无需追踪复杂的 if-else 嵌套
+- 🐛 **降低错误率**: 减少嵌套深度，降低逻辑错误风险
+- ⚡ **性能优化**: 快速失败，避免不必要的计算
+- 🔧 **易于维护**: 条件清晰分离，添加新检查更容易
+
+**1.6.8** Prefer direct return over assignment with named returns
+When returning errors, prefer direct `return` statements over assigning to named return values then returning. Even when `defer` uses the named return value, direct returns are simpler and clearer.
+
+**核心原则**:
+- ✅ Use direct `return err` instead of assigning then returning
+- ✅ Defer can access directly returned values correctly
+- ❌ Avoid `err = errors.New(...); return` pattern
+
+**错误示例**:
+```go
+func ProcessRequest(ctx context.Context, req *Request) (err error) {
+    // ❌ 赋值后 return
+    if req.GetBizId() == "" {
+        err = errors.New("biz_id is required")
+        return
+    }
+
+    if req.GetAlias() == "" {
+        err = errors.New("alias is required")
+        return
+    }
+
+    return nil
+}
+```
+
+**正确示例**:
+```go
+func ProcessRequest(ctx context.Context, req *Request) (err error) {
+    // ✅ 直接 return
+    if req.GetBizId() == "" {
+        return errors.New("biz_id is required")
+    }
+
+    if req.GetAlias() == "" {
+        return errors.New("alias is required")
+    }
+
+    return nil
+}
+```
+
+**Defer 场景示例**:
+```go
+// ✅ 即使有 defer，也应该直接 return
+func SaveData(ctx context.Context, data *Data) (err error) {
+    defer func() {
+        if err != nil {
+            log.Error(ctx, "save failed", log.ErrorField(err))
+        }
+    }()
+
+    if data == nil {
+        return errors.New("data is nil")  // ✅ defer 能正确获取
+    }
+
+    return db.Save(data)
+}
+
+// ❌ 不推荐
+func SaveData(ctx context.Context, data *Data) (err error) {
+    defer func() {
+        if err != nil {
+            log.Error(ctx, "save failed", log.ErrorField(err))
+        }
+    }()
+
+    if data == nil {
+        err = errors.New("data is nil")  // ❌ 不必要的赋值
+        return
+    }
+
+    err = db.Save(data)
+    return
+}
+```
+
+**Note**: Even when `defer` reads or modifies the error, direct `return` works correctly because `defer` executes after the return value is set.
 
 ---
 
@@ -701,11 +1009,9 @@ Function parameter design should be reasonable, cannot have logical contradictio
 
 **2.5.1** No spelling errors (except whitelist)
 
-**2.5.2** Avoid magic numbers and strings
+**2.5.2** Function length should be moderate - split if too long
 
-**2.5.3** Function length should be moderate - split if too long
-
-**2.5.4** Public functions must have comments
+**2.5.3** Public functions must have comments
 ```go
 // GetUserByID retrieves user by ID
 // Parameters:
@@ -717,7 +1023,7 @@ Function parameter design should be reasonable, cannot have logical contradictio
 func GetUserByID(ctx context.Context, id int64) (*User, error)
 ```
 
-**2.5.5** Enum constants must have Chinese comments and be aligned
+**2.5.4** Enum constants must have Chinese comments and be aligned
 ```go
 const (
     StatusInit     = 0 // 初始化
@@ -726,185 +1032,9 @@ const (
 )
 ```
 
-**2.5.6** Inject dependencies via constructor
+**2.5.5** Inject dependencies via constructor
 
-**2.5.7** Use struct embedding for code reuse
-
-**2.5.8** Allow pointer passing when data is already pointer type
-```go
-// ✅ Data is already pointer, pass directly
-type User struct {
-    Profile *UserProfile
-}
-
-func ProcessUser(user *User) {
-    SaveProfile(user.Profile) // ✅ OK to pass nil if function accepts it
-}
-```
-
-**2.5.9** Use proto utility functions
-When constructing protobuf messages, should use `proto.XXX()` utility functions.
-- ✅ Construct pb messages using `proto.XXX()`, e.g., `proto.Int64(roleDepart.ID)`
-- ✅ Use `proto.String()`, `proto.Int64()` and other methods
-- ❌ Avoid direct assignment, using utility functions is safer
-
-```go
-// ✅ Correct: Use proto utility functions
-pb := &UserPB{
-    ID:   proto.Int64(user.ID),
-    Name: proto.String(user.Name),
-}
-
-// ❌ Incorrect: Direct assignment
-pb := &UserPB{
-    ID:   &user.ID,  // May have issues
-    Name: &user.Name,
-}
-```
-
-**2.5.10** Avoid duplicate implementations
-If there are already other conversion functions or utility functions, should reuse them instead of re-implementing.
-- ✅ If there are already other conversion functions, should use them
-- ❌ Avoid re-implementing the same functionality
-- ✅ Maintain code consistency
-
-**2.5.11** Use cache reasonably
-Not all data needs caching, should decide whether to use cache based on business requirements.
-- ✅ Cache should be used for scenarios that truly need performance improvement
-- ❌ Avoid overusing cache
-- ✅ For example, favorites don't need redis cache, can directly read/write db
-
-**2.5.12** Optimize code execution order with Early Return
-Code execution order should follow the "fail fast" principle. Handle error cases and edge conditions first, then process the main logic. This reduces nesting depth and improves code readability.
-
-**核心原则**:
-- ✅ Error conditions and edge cases should return early
-- ✅ Keep the main success path at the lowest indentation level (Golden Path)
-- ✅ Reduce nesting depth to improve readability
-- ❌ Avoid deep nesting of if-else blocks
-
-**错误示例 - 深度嵌套**:
-```go
-func ProcessUser(user *User) error {
-    if user != nil {
-        if user.IsActive {
-            if user.HasPermission("write") {
-                if !user.IsBlocked {
-                    // Main logic deeply nested
-                    return saveUser(user)
-                } else {
-                    return errors.New("user is blocked")
-                }
-            } else {
-                return errors.New("no write permission")
-            }
-        } else {
-            return errors.New("user not active")
-        }
-    } else {
-        return errors.New("user is nil")
-    }
-}
-```
-
-**正确示例 - Early Return**:
-```go
-func ProcessUser(user *User) error {
-    // Handle error cases first (fail fast)
-    if user == nil {
-        return errors.New("user is nil")
-    }
-    if !user.IsActive {
-        return errors.New("user not active")
-    }
-    if !user.HasPermission("write") {
-        return errors.New("no write permission")
-    }
-    if user.IsBlocked {
-        return errors.New("user is blocked")
-    }
-
-    // Main logic at lowest indentation (Golden Path)
-    return saveUser(user)
-}
-```
-
-**优化执行顺序原则**:
-1. **廉价检查优先**: 先执行开销小的检查（如 nil 检查、简单比较）
-2. **常见失败优先**: 先检查最可能失败的条件
-3. **避免无效计算**: 在执行昂贵操作前完成所有前置检查
-
-**执行顺序优化示例**:
-```go
-// ❌ 不佳 - 昂贵操作在前
-func ValidateAndProcess(id int64) error {
-    // 昂贵的数据库查询
-    user, err := db.GetUserByID(id)
-    if err != nil {
-        return err
-    }
-
-    // 简单检查应该在前面
-    if id <= 0 {
-        return errors.New("invalid id")
-    }
-
-    return processUser(user)
-}
-
-// ✅ 正确 - 廉价检查优先
-func ValidateAndProcess(id int64) error {
-    // 先做简单的参数验证
-    if id <= 0 {
-        return errors.New("invalid id")
-    }
-
-    // 参数有效后再执行昂贵操作
-    user, err := db.GetUserByID(id)
-    if err != nil {
-        return err
-    }
-
-    return processUser(user)
-}
-```
-
-**循环中的 Early Continue**:
-```go
-// ❌ 不佳 - 深度嵌套
-for _, user := range users {
-    if user.IsActive {
-        if !user.IsBlocked {
-            if user.Age >= 18 {
-                // Process logic deeply nested
-                processUser(user)
-            }
-        }
-    }
-}
-
-// ✅ 正确 - Early Continue
-for _, user := range users {
-    if !user.IsActive {
-        continue
-    }
-    if user.IsBlocked {
-        continue
-    }
-    if user.Age < 18 {
-        continue
-    }
-
-    // Main logic at lowest indentation
-    processUser(user)
-}
-```
-
-**实际收益**:
-- 📖 **可读性提升**: 主流程一目了然，无需追踪复杂的 if-else 嵌套
-- 🐛 **降低错误率**: 减少嵌套深度，降低逻辑错误风险
-- ⚡ **性能优化**: 快速失败，避免不必要的计算
-- 🔧 **易于维护**: 条件清晰分离，添加新检查更容易
+**2.5.6** Use struct embedding for code reuse
 
 ---
 
@@ -3360,7 +3490,7 @@ handleError:
 ## Rule Reference by Category
 
 ### By Priority
-- **P0 (Must Fix)**: Rules 1.1.* through 1.5.*
+- **P0 (Must Fix)**: Rules 1.1.* through 1.6.*
 - **P1 (Strongly Recommended)**: Rules 2.1.* through 2.5.*, 4.1.* through 4.8.*
 - **P2 (Suggested)**: Rules 3.1.* through 3.3.*
 
@@ -3370,6 +3500,7 @@ handleError:
 - **Database**: 1.3.*
 - **Concurrency**: 1.4.*
 - **JSON**: 1.5.*
+- **Code Simplicity**: 1.6.*
 - **Naming**: 2.1.*
 - **Logging**: 2.2.*
 - **Organization**: 2.3.*
@@ -3391,6 +3522,39 @@ handleError:
 ---
 
 ## Document History
+
+- **v2.0.0** (2026-01-20): Major change - Elevated code simplicity to P0
+  - Created new P0 category: 1.6 Code Simplicity
+  - Migrated 8 rules from P1 (2.5.*) to P0 (1.6.*):
+    - 1.6.1 (formerly 2.5.2): Avoid magic numbers and strings
+    - 1.6.2 (formerly 2.5.8): Allow pointer passing when data is already pointer type
+    - 1.6.3 (formerly 2.5.9): Use proto utility functions
+    - 1.6.4 (formerly 2.5.10): Avoid duplicate implementations
+    - 1.6.5 (formerly 2.5.11): Use cache reasonably
+    - 1.6.6 (formerly 2.5.12): Avoid unnecessary pointer operations
+    - 1.6.7 (formerly 2.5.13): Optimize code execution order with Early Return
+    - 1.6.8 (formerly 2.5.14): Prefer direct return over assignment with named returns
+  - Renumbered remaining 2.5.* rules (2.5.3-2.5.7 became 2.5.2-2.5.6)
+  - Updated total rules: 141 (P0: 38, P1: 93, P2: 10)
+  - Breaking change: Code simplicity violations now require mandatory fixes
+
+- **v1.3.3** (2026-01-20): Added return statement simplification
+  - Added 1 new P1 rule (2.5.14): Prefer direct return over assignment with named returns
+  - Rule promotes code simplicity by avoiding unnecessary error variable assignments
+  - Clarifies that defer can correctly access directly returned values
+  - Updated total rules: 141 (P0: 30, P1: 101, P2: 10)
+
+- **v1.3.2** (2026-01-20): Added code simplicity improvements
+  - Added 1 new P1 rule (2.5.12): Avoid unnecessary pointer operations
+  - Rule prevents "address-of followed by dereference" anti-pattern
+  - Encourages direct value usage when pointer conversion is unnecessary
+  - Updated total rules: 140 (P0: 30, P1: 100, P2: 10)
+
+- **v1.3.1** (2026-01-16): Added error creation best practices
+  - Added 1 new P0 rule (1.1.6): Use appropriate error creation methods
+  - Rule specifies using `errors.New()` for plain text and `errors.Errorf()` for parameterized errors
+  - Explicitly forbids using `fmt.Errorf()` for error creation
+  - Updated total rules: 139 (P0: 30, P1: 99, P2: 10)
 
 - **v1.1.0** (2025-01-09): Added rules from GitLab MR reviews
   - Added 7 new P0 rules (1.1.5, 1.3.9-1.3.13, 1.5.2)
