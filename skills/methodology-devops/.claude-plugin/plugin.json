@@ -1,0 +1,31 @@
+{
+  "name": "methodology-devops",
+  "version": "1.0.0",
+  "description": "DevOps方法论技能,提供CI/CD管道设计、自动化策略、监控反馈和持续改进的实践指导。基于DevOps文化和工程实践。",
+  "author": "Jason Ouyang",
+  "license": "MIT",
+  "keywords": [
+    "devops",
+    "ci-cd",
+    "continuous-integration",
+    "continuous-delivery",
+    "automation",
+    "monitoring",
+    "infrastructure-as-code",
+    "deployment",
+    "持续集成",
+    "持续交付"
+  ],
+  "framework": "DevOps",
+  "practices": [
+    "continuous-integration",
+    "continuous-delivery",
+    "infrastructure-as-code",
+    "monitoring",
+    "incident-response",
+    "automation",
+    "blue-green-deployment",
+    "canary-release"
+  ],
+  "language": "zh-CN"
+}

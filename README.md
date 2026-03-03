@@ -11,7 +11,14 @@ This repository provides a marketplace of pre-built components that extend Claud
 ```
 marketplace/
 ├── skills/          # Individual reusable skills
-│   └── go-code-review/     # Go code review skill (v2.0.0)
+│   ├── go-code-review/        # Go code review skill (v3.0.0)
+│   ├── problem-solving/       # Problem-solving orchestrator (v1.0.0)
+│   ├── decision-support/      # Multi-criteria decision analysis (v1.0.0)
+│   ├── risk-assessment/       # Risk evaluation (v1.0.0)
+│   ├── cost-benefit-analysis/ # Economic evaluation (v1.0.0)
+│   ├── methodology-agile/     # Agile/Scrum methodology (v1.0.0)
+│   ├── methodology-devops/    # DevOps methodology (v1.0.0)
+│   └── methodology-waterfall/ # Waterfall methodology (v1.0.0)
 ├── commands/        # Custom slash commands (coming soon)
 ├── agents/          # Specialized agent configurations (coming soon)
 ├── workflows/       # Complex multi-step workflows (coming soon)
@@ -91,6 +98,79 @@ Review my Go code
 
 **Test**: Run `Review test-cases/go-code-review/bad/user_service_bad.go` to see it in action.
 
+---
+
+#### Problem-Solving Framework (v1.0.0)
+
+Comprehensive problem-solving capabilities with cognitive agents and specialized analysis modules.
+
+**Core Orchestrator**:
+- **problem-solving** - Main orchestrator with 5 cognitive agents:
+  - 🔵 **systems-thinking** - Global perspective, emergent properties, leverage points
+  - 🟢 **modeling-abstraction** - Conceptual models, DDD patterns, abstraction layers
+  - 🟣 **decomposition** - Hierarchical breakdown, WBS, composition strategies
+  - 🟠 **iteration** - Incremental improvement, feedback loops, MVP approach
+  - 🔷 **pattern-recognition** - Pattern discovery/refactoring, GoF patterns
+
+**Analysis Modules**:
+- **decision-support** - Multi-criteria decision analysis (MCDA, AHP, TOPSIS, weighted scoring)
+- **risk-assessment** - Risk evaluation using COSO ERM and ISO 31000 frameworks
+- **cost-benefit-analysis** - Economic evaluation (ROI, NPV, IRR, TCO, payback period)
+
+**Methodology Skills**:
+- **methodology-agile** - Scrum framework (Sprint planning, user stories, velocity, burndown charts)
+- **methodology-devops** - CI/CD pipelines, IaC, monitoring, incident response, DORA metrics
+- **methodology-waterfall** - Traditional SDLC (6 stages, SRS, SDD, gate reviews, change management)
+
+**Quick Start Examples**:
+```
+# Comprehensive problem analysis
+"Help me analyze this microservices architecture design"
+→ Triggers all 5 cognitive agents in parallel
+
+# Decision support
+"Compare MongoDB vs PostgreSQL for my use case"
+→ Uses MCDA with weighted criteria matrix
+
+# Risk assessment
+"Evaluate risks of cloud migration"
+→ Generates risk matrix with mitigation strategies
+
+# Cost-benefit analysis
+"Should we build or buy a CRM system?"
+→ Calculates ROI, payback period, NPV
+
+# Agile planning
+"Plan the next Sprint for user authentication"
+→ Provides Scrum guidance and templates
+
+# DevOps design
+"Design a CI/CD pipeline for Node.js microservices"
+→ Provides stage-by-stage pipeline configuration
+
+# Waterfall project
+"Create requirements specification for banking system"
+→ Generates IEEE 830 SRS template
+```
+
+**Integration Patterns**:
+- Problem-solving → Risk assessment → Decision support (comprehensive analysis)
+- Agile + DevOps (modern software development)
+- Waterfall + Cost-benefit analysis (traditional projects)
+
+**Output Language**: All skills output in Chinese (中文) following FUTU standards.
+
+**Documentation**:
+- [problem-solving README](skills/problem-solving/README.md)
+- [decision-support README](skills/decision-support/README.md)
+- [risk-assessment README](skills/risk-assessment/README.md)
+- [cost-benefit-analysis README](skills/cost-benefit-analysis/README.md)
+- [methodology-agile README](skills/methodology-agile/README.md)
+- [methodology-devops README](skills/methodology-devops/README.md)
+- [methodology-waterfall README](skills/methodology-waterfall/README.md)
+
+---
+
 ### Commands
 Coming soon. See [commands/README.md](commands/README.md) for planned commands.
 
@@ -157,8 +237,10 @@ Test cases are available in the `test-cases/` directory to validate skill functi
 
 ## Roadmap
 
-- [x] Add initial set of common skills (Go Code Review v2.0.0)
+- [x] Add initial set of common skills (Go Code Review v3.0.0)
 - [x] Create testing framework (Go Code Review test cases)
+- [x] Problem-solving framework (v1.0.0) - 7 skills with cognitive agents
+- [ ] Integration tests for problem-solving framework
 - [ ] Create useful slash commands
 - [ ] Develop specialized agents
 - [ ] Document complex workflows

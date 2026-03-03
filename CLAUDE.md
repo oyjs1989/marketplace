@@ -110,7 +110,34 @@ marketplace/
 │   ├── go-code-review-organization/# Organization review skill
 │   │   ├── SKILL.md
 │   │   └── references/ (symlink)
-│   └── gitlab-ai-summary/         # GitLab MR summary skill
+│   ├── gitlab-ai-summary/         # GitLab MR summary skill
+│   ├── problem-solving/           # Problem-solving orchestrator (v1.0.0)
+│   │   ├── SKILL.md               # Main orchestrator with 5 agents
+│   │   ├── agents/                # 5 cognitive agents
+│   │   │   ├── systems-thinking.md
+│   │   │   ├── modeling-abstraction.md
+│   │   │   ├── decomposition.md
+│   │   │   ├── iteration.md
+│   │   │   └── pattern-recognition.md
+│   │   └── references/            # Thinking methods & problem patterns
+│   ├── decision-support/          # Multi-criteria decision analysis
+│   │   ├── SKILL.md
+│   │   └── references/            # Decision frameworks (AHP, TOPSIS)
+│   ├── risk-assessment/           # Risk evaluation and management
+│   │   ├── SKILL.md
+│   │   └── references/            # Risk frameworks (COSO ERM, ISO 31000)
+│   ├── cost-benefit-analysis/     # Economic evaluation
+│   │   ├── SKILL.md
+│   │   └── references/            # CBA methods (ROI, NPV, TCO)
+│   ├── methodology-agile/         # Agile/Scrum methodology
+│   │   ├── SKILL.md
+│   │   └── references/            # Agile framework (Sprint, user stories)
+│   ├── methodology-devops/        # DevOps methodology
+│   │   ├── SKILL.md
+│   │   └── references/            # DevOps framework (CI/CD, IaC, monitoring)
+│   └── methodology-waterfall/     # Waterfall methodology
+│       ├── SKILL.md
+│       └── references/            # Waterfall framework (6 stages, SRS, SDD)
 ├── agents/              # Agent configurations (agent.md files)
 ├── commands/            # Custom slash commands (empty, coming soon)
 ├── workflows/           # Multi-step workflows (coming soon)
@@ -229,6 +256,66 @@ The Go code review skill enforces 73+ rules across 5 categories:
 - P2 (Optimization): Project structure, testing standards, configuration management
 
 Reference: `skills/go-code-review/shared/FUTU_GO_STANDARDS.md`
+
+### Problem-Solving Framework
+
+The marketplace includes a comprehensive problem-solving framework with 7 skills:
+
+**Core Orchestrator:**
+- `problem-solving` - Main orchestrator with 5 cognitive agents that run in parallel:
+  - systems-thinking (🔵): Global perspective, emergent properties, leverage points
+  - modeling-abstraction (🟢): Conceptual models, abstraction layers, DDD patterns
+  - decomposition (🟣): Hierarchical breakdown, WBS, composition strategies
+  - iteration (🟠): Incremental improvement, feedback loops, MVP approach
+  - pattern-recognition (🔷): Pattern discovery/refactoring, GoF patterns, anti-patterns
+
+**Analysis Modules:**
+- `decision-support` - Multi-criteria decision analysis (MCDA, AHP, TOPSIS)
+- `risk-assessment` - Risk evaluation using COSO ERM and ISO 31000 frameworks
+- `cost-benefit-analysis` - Economic evaluation (ROI, NPV, IRR, TCO)
+
+**Methodology Skills:**
+- `methodology-agile` - Scrum framework with Sprint planning and iterative development
+- `methodology-devops` - CI/CD pipelines, IaC, monitoring, and incident response
+- `methodology-waterfall` - Traditional SDLC with 6 stages and document templates
+
+**Usage Examples:**
+```
+# Comprehensive problem analysis
+"Help me analyze this architecture design problem"
+→ Triggers problem-solving orchestrator with all 5 agents
+
+# Decision support
+"Help me choose between MongoDB and PostgreSQL"
+→ Uses decision-support with weighted criteria
+
+# Risk assessment
+"Evaluate the risks of migrating to microservices"
+→ Uses risk-assessment with risk matrix
+
+# Economic evaluation
+"Is it worth building this feature in-house vs buying?"
+→ Uses cost-benefit-analysis with ROI calculation
+
+# Agile planning
+"Help me plan the next Sprint"
+→ Uses methodology-agile with Scrum guidance
+
+# DevOps design
+"Design a CI/CD pipeline for my Node.js app"
+→ Uses methodology-devops with pipeline stages
+
+# Waterfall project
+"Create a requirements specification for the banking system"
+→ Uses methodology-waterfall with SRS template
+```
+
+**Integration Patterns:**
+- Problem-solving → Risk assessment → Decision support (comprehensive analysis)
+- Agile methodology + DevOps practices (modern development)
+- Waterfall methodology + Cost-benefit analysis (traditional projects)
+
+**Output Language:** All problem-solving skills output in Chinese (中文) following FUTU standards.
 
 ### OpenSpec Integration
 

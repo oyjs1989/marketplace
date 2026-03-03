@@ -1,0 +1,30 @@
+{
+  "name": "decision-support",
+  "version": "1.0.0",
+  "description": "决策支持集成技能,提供多准则决策分析、方案比较和综合推荐。整合风险评估和成本效益分析,支持复杂决策场景。",
+  "author": "Jason Ouyang",
+  "license": "MIT",
+  "keywords": [
+    "decision-support",
+    "multi-criteria-decision-analysis",
+    "MCDA",
+    "AHP",
+    "TOPSIS",
+    "weighted-scoring",
+    "决策支持",
+    "方案比较",
+    "技术选型"
+  ],
+  "methods": [
+    "weighted-scoring",
+    "AHP",
+    "TOPSIS",
+    "decision-tree"
+  ],
+  "integrations": [
+    "problem-solving",
+    "risk-assessment",
+    "cost-benefit-analysis"
+  ],
+  "language": "zh-CN"
+}

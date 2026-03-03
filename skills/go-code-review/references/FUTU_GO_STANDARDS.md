@@ -1,12 +1,12 @@
 # FUTU Go Coding Standards
 
-**Version**: 2.0.0
-**Last Updated**: 2026-01-20
+**Version**: 2.1.0
+**Last Updated**: 2026-01-23
 **Owner**: FUTU Development Team
 
 This document contains the complete Go coding standards for FUTU projects. All specialized review skills reference these standards.
 
-**Total Rules**: 141 (P0: 38, P1: 93, P2: 10)
+**Total Rules**: 142 (P0: 38, P1: 94, P2: 10)
 
 ## Table of Contents
 
@@ -749,6 +749,65 @@ log.Info(ctx, "operation success",
 // ❌ Incorrect: Missing necessary fields
 log.Info(ctx, "operation success")
 ```
+
+**2.2.3.1** Log messages must describe business operations clearly
+Log messages (msg field) must clearly describe what business operation the current method is performing. Messages should have business meaning so that the entire process flow and problems can be understood from logs alone without reading code.
+
+Core Principles:
+- ✅ Log msg should describe what business operation is being performed, not just technical actions
+- ✅ Messages should be understandable to someone unfamiliar with the code
+- ✅ Logs should tell a story of the business flow from start to finish
+- ✅ Error logs must clearly describe what went wrong in business terms
+
+```go
+// ✅ Good: Business-meaningful messages
+log.Info(ctx, "starting user registration process",
+    log.String("email", email),
+    log.String("user_type", userType))
+
+log.Info(ctx, "validating user registration data",
+    log.String("email", email))
+
+log.Info(ctx, "creating user account in database",
+    log.String("email", email))
+
+log.Info(ctx, "sending welcome email to new user",
+    log.String("email", email))
+
+log.Info(ctx, "user registration completed successfully",
+    log.String("user_id", userID),
+    log.String("email", email))
+
+// ❌ Bad: Technical or vague messages
+log.Info(ctx, "success")  // What succeeded?
+
+log.Info(ctx, "processing")  // Processing what?
+
+log.Info(ctx, "database operation")  // What kind of operation?
+
+log.Info(ctx, "calling external API")  // Which API? For what purpose?
+
+// ✅ Good: Error messages with business context
+log.Error(ctx, "user registration failed: email already exists in system",
+    log.String("email", email),
+    log.ErrorField(err))
+
+log.Error(ctx, "failed to send welcome email after user creation",
+    log.String("user_id", userID),
+    log.String("email", email),
+    log.ErrorField(err))
+
+// ❌ Bad: Technical error messages without business context
+log.Error(ctx, "query failed", log.ErrorField(err))
+
+log.Error(ctx, "error occurred", log.ErrorField(err))
+```
+
+**Benefits of business-meaningful log messages:**
+- 📖 **Troubleshooting**: Understand business flow without reading code
+- 🐛 **Debugging**: Quickly identify where in the business process failures occur
+- 📊 **Monitoring**: Track business operations and identify bottlenecks
+- 📝 **Documentation**: Logs serve as runtime documentation of business processes
 
 **2.2.4** Functions should have necessary info/debug logs (non-trivial functions)
 
@@ -3522,6 +3581,13 @@ handleError:
 ---
 
 ## Document History
+
+- **v2.1.0** (2026-01-23): Enhanced logging standards with business context requirement
+  - Added 1 new P1 rule (2.2.3.1): Log messages must describe business operations clearly
+  - Rule requires log messages to have business meaning, not just technical descriptions
+  - Emphasizes logs should tell the story of business flow without reading code
+  - Provides guidelines for making error messages business-context aware
+  - Updated total rules: 142 (P0: 38, P1: 94, P2: 10)
 
 - **v2.0.0** (2026-01-20): Major change - Elevated code simplicity to P0
   - Created new P0 category: 1.6 Code Simplicity

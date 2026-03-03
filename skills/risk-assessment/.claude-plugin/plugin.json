@@ -1,0 +1,31 @@
+{
+  "name": "risk-assessment",
+  "version": "1.0.0",
+  "description": "系统化的风险评估技能,提供风险识别、分析、量化和缓解策略。支持技术风险、项目风险和业务风险的全面评估。",
+  "author": "Jason Ouyang",
+  "license": "MIT",
+  "keywords": [
+    "risk-assessment",
+    "risk-management",
+    "COSO-ERM",
+    "ISO-31000",
+    "risk-matrix",
+    "风险评估",
+    "风险管理",
+    "风险分析"
+  ],
+  "frameworks": [
+    "COSO ERM",
+    "ISO 31000",
+    "FMEA",
+    "Monte Carlo"
+  ],
+  "risk_categories": [
+    "technical",
+    "project",
+    "business",
+    "security",
+    "operational"
+  ],
+  "language": "zh-CN"
+}
