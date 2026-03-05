@@ -3,7 +3,7 @@
   "version": "4.0.0",
   "description": "Go code review with three-tier architecture: quantitative tools + 38 YAML rules + 5 domain-expert AI agents (safety/data/design/quality/observability)",
   "author": {
-    "name": "FUTU Development Team",
-    "email": "dev@futunn.com"
+    "name": "jasonouyang",
+    "email": "jasonouyang@futunn.com"
   }
 }
