@@ -71,7 +71,7 @@ rules:
     pattern:
       type: regex
       match: 'fmt\.Println\('
-    message: "禁止在生产代码中使用 fmt.Println()。fmt.Println 输出无结构化格式、无日志级别、无上下文字段，无法被日志收集系统解析。应使用项目统一的结构化日志框架（如 log.Info/log.Debug）。"
+    message: "禁止在生产代码中使用 fmt.Println()。fmt.Println 输出无结构化格式、无日志级别、无上下文字段，无法被日志收集系统解析。应使用项目统一的结构化日志框架（如 log.Info/log.Debug）。注意：如果命中行以 // 开头（注释代码），请忽略此命中。"
     examples:
       bad: 'fmt.Println("user created:", user.ID)'
       good: 'log.Info(ctx, "user created", log.Int64("user_id", user.ID))'
@@ -83,7 +83,7 @@ rules:
     pattern:
       type: regex
       match: 'fmt\.Printf\('
-    message: "禁止在生产代码中使用 fmt.Printf()。与 fmt.Println 相同，fmt.Printf 输出无结构化格式、无日志级别，无法被日志收集系统（ELK/Loki）解析聚合。应使用结构化日志框架（如 log.Info、log.Debug）替代。"
+    message: "禁止在生产代码中使用 fmt.Printf()。与 fmt.Println 相同，fmt.Printf 输出无结构化格式、无日志级别，无法被日志收集系统（ELK/Loki）解析聚合。应使用结构化日志框架（如 log.Info、log.Debug）替代。注意：如果命中行以 // 开头（注释代码），请忽略此命中。"
     examples:
       bad: 'fmt.Printf("processing order %d for user %s\n", orderID, userName)'
       good: 'log.Info(ctx, "processing order", log.Int64("order_id", orderID), log.String("user_name", userName))'

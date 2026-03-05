@@ -64,11 +64,11 @@ rules:
   # NOTE: 此规则为多行模式匹配，grep 单行正则难以精确匹配，agent 需二次确认代码上下文
   - id: DATA-006
     name: 禁止在循环中单条 Create
-    severity: P1
+    severity: P2
     pattern:
       type: regex
       match: 'for .* range .*\{'
-    message: "禁止在 for range 循环中逐条调用 db.Create()。N 条记录会产生 N 次数据库往返，严重影响性能。应收集所有数据后使用 db.CreateInBatches(records, batchSize) 批量插入。注意：此规则需结合循环体内是否有 .Create() 调用来判断。"
+    message: "禁止在 for range 循环中逐条调用 db.Create()。N 条记录会产生 N 次数据库往返，严重影响性能。应收集所有数据后使用 db.CreateInBatches(records, batchSize) 批量插入。注意：此规则误报率极高。仅当循环体内存在实际的数据库写操作（Insert/Save/Update/Create 等）时才报告。如果循环体内只有读操作或无 DB 操作，请忽略此命中。"
     examples:
       bad: "for _, item := range items { db.Create(&item) }"
       good: "db.CreateInBatches(items, 100)"

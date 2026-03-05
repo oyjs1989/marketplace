@@ -6,10 +6,10 @@ rules:
     pattern:
       type: regex
       match: 'fmt\.Errorf\('
-    message: "禁止使用 fmt.Errorf() 创建错误。应使用 errors.Errorf()（pkg/errors）或带 %w 的 fmt.Errorf 包装已有错误。直接构造新错误请用 errors.New()。"
+    message: "禁止使用 fmt.Errorf() 创建错误。应使用 errors.Errorf()（pkg/errors）或带 %w 的 fmt.Errorf 包装已有错误。直接构造新错误请用 errors.New()。注意：fmt.Errorf(\"%w\", err) 是合法的错误包装，如果命中行包含 %w 请忽略此命中。"
     examples:
-      bad: 'return fmt.Errorf("user not found: %d", userID)'
-      good: 'return errors.Errorf("user not found: %d", userID)'
+      bad: 'return fmt.Errorf("user not found: %d", userID)  // 无 %w 才是问题'
+      good: 'return fmt.Errorf("user not found: %w", err)  // 有 %w 是正确包装'
 
   # 规则说明: 业务函数禁止使用 panic，panic 会导致程序崩溃，应通过 error 返回值传递错误
   - id: SAFE-002
@@ -18,7 +18,7 @@ rules:
     pattern:
       type: regex
       match: '\bpanic\('
-    message: "禁止在业务逻辑中使用 panic()。panic 会导致整个服务崩溃。应通过 error 返回值传递错误信息，让调用方决定如何处理。"
+    message: "禁止在业务逻辑中使用 panic()。panic 会导致整个服务崩溃。应通过 error 返回值传递错误信息，让调用方决定如何处理。注意：在 _test.go 测试文件中使用 panic 是正常用法（测试辅助函数），Agent 应跳过 _test.go 文件的命中。"
     examples:
       bad: 'panic("invalid user id")'
       good: 'return errors.New("invalid user id")'
