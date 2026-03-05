@@ -95,21 +95,22 @@ git status
 ```
 marketplace/
 ├── skills/                        # Reusable domain expertise
-│   ├── go-code-review/            # Orchestrator skill (v2.0.0)
-│   │   ├── SKILL.md               # Main orchestrator
-│   │   └── references/            # FUTU_GO_STANDARDS.md (97+ rules)
-│   ├── go-code-review-gorm/       # GORM database review skill
-│   │   ├── SKILL.md
-│   │   └── references/ (symlink)
-│   ├── go-code-review-error-safety/# Error & safety review skill
-│   │   ├── SKILL.md
-│   │   └── references/ (symlink)
-│   ├── go-code-review-naming/     # Naming & logging review skill
-│   │   ├── SKILL.md
-│   │   └── references/ (symlink)
-│   ├── go-code-review-organization/# Organization review skill
-│   │   ├── SKILL.md
-│   │   └── references/ (symlink)
+│   ├── go-code-review/            # Go code review plugin (v4.0.0)
+│   │   ├── SKILL.md               # Main orchestrator (三层架构)
+│   │   ├── agents/                # 5 领域专家 agents
+│   │   │   ├── safety.md          # 安全性专家
+│   │   │   ├── data.md            # 数据层专家
+│   │   │   ├── design.md          # 架构设计哲学专家
+│   │   │   ├── quality.md         # 代码质量专家
+│   │   │   └── observability.md   # 可观测性专家
+│   │   ├── rules/                 # YAML 结构化规则（单一数据源）
+│   │   │   ├── safety.yaml        # SAFE-001~010
+│   │   │   ├── data.yaml          # DATA-001~010
+│   │   │   ├── quality.yaml       # QUAL-001~010
+│   │   │   └── observability.yaml # OBS-001~008
+│   │   └── tools/
+│   │       ├── analyze-go.sh      # 量化分析 → metrics.json
+│   │       └── scan-rules.sh      # YAML 规则扫描 → rule-hits.json
 │   ├── gitlab-ai-summary/         # GitLab MR summary skill
 │   ├── problem-solving/           # Problem-solving orchestrator (v1.0.0)
 │   │   ├── SKILL.md               # Main orchestrator with 5 agents
@@ -154,24 +155,25 @@ marketplace/
 
 ### Skill Architecture Pattern
 
-Go Code Review plugin uses a **unified orchestration model** with automatic agent selection:
-- **Main Orchestrator**: Single skill coordinates comprehensive review
-- **4 Specialist Agents**: Independent agents in `agents/` directory
-  - Each agent has its own agent.md file with specific focus
-  - Agents auto-triggered based on code patterns
-  - Can be invoked independently or through orchestrator
-- **Shared References**: FUTU_GO_STANDARDS.md with 97+ rules
-- **Smart Selection**: Automatically determines which agents apply
-- **Parallel Execution**: All agents run simultaneously for speed
+Go Code Review plugin (v4.0.0) uses a **Three-Tier Expert Architecture**:
+- **Tier 1 - Quantitative Tools**: `analyze-go.sh` measures file size, function length, and nesting depth, producing `metrics.json` before AI agents run
+- **Tier 2 - YAML Rule Scanning**: `scan-rules.sh` reads 38 structured YAML rules (SAFE/DATA/QUAL/OBS) and produces `rule-hits.json` with pattern-matched violations
+- **Tier 3 - 5 Domain-Expert Agents**: Independent agents each consuming Tier 1 + Tier 2 output for context-aware review
+  - Each agent has its own agent.md with a specific domain focus
+  - Agents run in parallel after Tier 1 and Tier 2 complete
+  - Can be invoked independently or through the orchestrator
+- **YAML as Single Source of Truth**: Rules defined in `rules/*.yaml`, not inline in agent prompts
+- **Parallel Execution**: All 5 agents run simultaneously for speed
 
-Example: Go Code Review Plugin (v3.0.0):
-1. **go-code-review** - Main orchestrator with automatic agent selection
-2. **gorm-review** agent (blue) - GORM database review (rules 1.3.*)
-3. **error-safety** agent (red) - Error & safety review (rules 1.1.*, 1.2.*, 1.4.*, 1.5.*)
-4. **naming-logging** agent (green) - Naming & logging review (rules 2.1.*, 2.2.*)
-5. **organization** agent (purple) - Organization & quality review (rules 2.3.*, 2.4.*, 2.5.*, 3.*)
+Example: Go Code Review Plugin (v4.0.0):
+1. **go-code-review** (SKILL.md) - Main orchestrator: runs tools, then dispatches agents
+2. **safety** agent - Concurrency, nil safety, context propagation (SAFE-001~010)
+3. **data** agent - N+1 queries, GORM operations, type semantics (DATA-001~010)
+4. **design** agent - UNIX 7 principles, code rot causes, architecture philosophy
+5. **quality** agent - Naming, metrics violations, code organization (QUAL-001~010)
+6. **observability** agent - Logging strategy, error message quality (OBS-001~008)
 
-**Key Benefit**: Single invocation (`Review my Go code`) automatically triggers all applicable agents
+**Key Benefit**: Single invocation (`Review my Go code`) runs quantitative tooling then triggers all 5 domain-expert agents in parallel
 
 ## File Naming Conventions
 
@@ -230,6 +232,8 @@ All Go code review output **MUST be in Chinese (中文)** per FUTU standards:
 - Suggestions: 中文
 - File paths and code: Keep original
 - Severity levels: P0 (必须修复), P1 (强烈建议), P2 (建议优化)
+- Rule IDs: Use structured IDs — SAFE-001~010, DATA-001~010, QUAL-001~010, OBS-001~008
+  - Example: `[P0][SAFE-001] 使用 fmt.Errorf 会丢失错误堆栈，应使用 errors.Wrap`
 
 ### Test Case Structure
 
@@ -250,12 +254,14 @@ For skills with validation:
 
 ### FUTU Go Standards
 
-The Go code review skill enforces 73+ rules across 5 categories:
-- P0 (Critical): Error handling, nil checks, GORM operations, concurrency, JSON processing
-- P1 (Recommended): Naming conventions, logging standards, code organization, interface design, code quality
-- P2 (Optimization): Project structure, testing standards, configuration management
+The Go code review skill (v4.0.0) enforces 142+ rules across 4 YAML rule domains plus agent-driven design principles:
+- **SAFE-001~010**: Error handling, nil checks, concurrency, context propagation
+- **DATA-001~010**: GORM operations, N+1 queries, JSON processing, type semantics
+- **QUAL-001~010**: Naming conventions, code organization, magic numbers, metrics thresholds
+- **OBS-001~008**: Logging standards, log field naming, error field requirements, data layer logging
+- **Design principles**: UNIX 7 principles + code rot causes (enforced by design agent)
 
-Reference: `skills/go-code-review/shared/FUTU_GO_STANDARDS.md`
+Rules are defined in `skills/go-code-review/rules/*.yaml` (single source of truth).
 
 ### Problem-Solving Framework
 

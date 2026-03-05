@@ -11,7 +11,7 @@ This repository provides a marketplace of pre-built components that extend Claud
 ```
 marketplace/
 ├── skills/          # Individual reusable skills
-│   ├── go-code-review/        # Go code review skill (v3.0.0)
+│   ├── go-code-review/        # Go code review skill (v4.0.0)
 │   ├── problem-solving/       # Problem-solving orchestrator (v1.0.0)
 │   ├── decision-support/      # Multi-criteria decision analysis (v1.0.0)
 │   ├── risk-assessment/       # Risk evaluation (v1.0.0)
@@ -63,9 +63,11 @@ Each component type has its own usage pattern:
 
 ### Skills
 
-#### Go Code Review Plugin (v3.0.0)
+#### Go Code Review Plugin (v4.0.0)
 
-Unified Go code review plugin with automatic agent orchestration based on FUTU's 97+ coding standards.
+Three-Tier Expert Architecture for Go code review, enforcing FUTU's 142+ coding standards with quantitative metrics, YAML rule scanning, and domain-expert AI agents.
+
+> **Breaking Change from v3.0.0**: The old 4 specialist agents (gorm-review, error-safety, naming-logging, organization) are replaced by a new three-tier architecture with 5 domain-expert agents and automated tooling.
 
 **Quick Start**:
 ```
@@ -73,24 +75,29 @@ Review my Go code
 ```
 
 **One command triggers everything** - the plugin automatically:
-- Analyzes your code changes
-- Selects applicable specialist agents
-- Runs all agents in parallel
+- Runs quantitative analysis (Tier 1: metrics.json)
+- Scans YAML rules for pattern violations (Tier 2: rule-hits.json)
+- Dispatches 5 domain-expert agents in parallel (Tier 3)
 - Delivers comprehensive findings in Chinese
 
-**4 Specialist Agents**:
-- **gorm-review** (blue) - Database operations and GORM best practices
-- **error-safety** (red) - Error handling and concurrency safety
-- **naming-logging** (green) - Naming conventions and logging standards
-- **organization** (purple) - Code organization and quality
+**Three-Tier Expert Architecture**:
+- **Tier 1 - Quantitative Analysis**: `analyze-go.sh` produces `metrics.json` (file size, function length, nesting depth)
+- **Tier 2 - Rule Scanning**: `scan-rules.sh` reads 38 YAML rules (SAFE/DATA/QUAL/OBS) and produces `rule-hits.json`
+- **Tier 3 - 5 Domain-Expert Agents**:
+  - **safety** - Concurrency, nil safety, context propagation (SAFE-001~010)
+  - **data** - N+1 queries, GORM operations, type semantics (DATA-001~010)
+  - **design** - UNIX 7 principles, code rot causes, architecture
+  - **quality** - Naming, metrics violations, code organization (QUAL-001~010)
+  - **observability** - Logging strategy, error message quality (OBS-001~008)
 
 **Features**:
-- **Smart Auto-Selection**: Agents automatically triggered based on code patterns
-- **Single Invocation**: One call reviews with all 97+ rules
-- **Parallel Execution**: All agents run simultaneously for maximum speed
+- **Automated Tooling**: Tier 1 + Tier 2 run before AI agents to provide quantitative context
+- **YAML Rule Source of Truth**: 38 structured rules replace inline rule documentation
+- **Single Invocation**: One call reviews with all 142+ rules
+- **Parallel Execution**: All 5 agents run simultaneously for maximum speed
 - **Chinese Output**: All findings reported in Chinese (FUTU requirement)
 - **Priority Classification**: P0 (must fix), P1 (recommended), P2 (suggested)
-- **Manual Override**: Can invoke individual agents when needed
+- **Structured Rule IDs**: SAFE-/DATA-/QUAL-/OBS- prefix naming for traceability
 
 **Documentation**:
 - Main: [skills/go-code-review/README.md](skills/go-code-review/README.md)
@@ -237,7 +244,7 @@ Test cases are available in the `test-cases/` directory to validate skill functi
 
 ## Roadmap
 
-- [x] Add initial set of common skills (Go Code Review v3.0.0)
+- [x] Add initial set of common skills (Go Code Review v4.0.0)
 - [x] Create testing framework (Go Code Review test cases)
 - [x] Problem-solving framework (v1.0.0) - 7 skills with cognitive agents
 - [ ] Integration tests for problem-solving framework

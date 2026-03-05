@@ -1,0 +1,122 @@
+rules:
+  # 规则说明: 禁止使用 fmt.Errorf 创建错误，应使用 errors.Errorf（来自 github.com/pkg/errors 或 fmt.Errorf with %w）
+  - id: SAFE-001
+    name: 禁用 fmt.Errorf 创建错误
+    severity: P0
+    pattern:
+      type: regex
+      match: 'fmt\.Errorf\('
+    message: "禁止使用 fmt.Errorf() 创建错误。应使用 errors.Errorf()（pkg/errors）或带 %w 的 fmt.Errorf 包装已有错误。直接构造新错误请用 errors.New()。"
+    examples:
+      bad: 'return fmt.Errorf("user not found: %d", userID)'
+      good: 'return errors.Errorf("user not found: %d", userID)'
+
+  # 规则说明: 业务函数禁止使用 panic，panic 会导致程序崩溃，应通过 error 返回值传递错误
+  - id: SAFE-002
+    name: 业务函数禁用 panic
+    severity: P0
+    pattern:
+      type: regex
+      match: '\bpanic\('
+    message: "禁止在业务逻辑中使用 panic()。panic 会导致整个服务崩溃。应通过 error 返回值传递错误信息，让调用方决定如何处理。"
+    examples:
+      bad: 'panic("invalid user id")'
+      good: 'return errors.New("invalid user id")'
+
+  # 规则说明: error 应作为最后一个返回值，符合 Go 惯例，便于调用方统一处理
+  # NOTE: 此规则误报率较高，agent 需二次确认——正则仅能检测 error 后面还有其他返回值的情况
+  - id: SAFE-003
+    name: error 必须作为最后一个返回值
+    severity: P1
+    pattern:
+      type: regex
+      match: '\(error,[[:space:]]*[a-zA-Z]'
+    message: "函数返回值中 error 必须放在最后位置，符合 Go 惯例（如 (T, error) 而非 (error, T)）。调用方通常用 v, err := f() 模式，error 在最后便于统一处理。"
+    examples:
+      bad: 'func GetUser(id int) (error, *User)'
+      good: 'func GetUser(id int) (*User, error)'
+
+  # 规则说明: recover() 后必须记录日志或重新 panic，不能静默吞掉错误
+  - id: SAFE-004
+    name: 禁用 recover 静默吞掉错误
+    severity: P0
+    pattern:
+      type: regex
+      match: 'recover\(\)'
+    message: "使用 recover() 时必须记录日志（log.Error）并处理错误，不能静默吞掉 panic 信息。否则问题会被隐藏，难以排查。建议模式：if r := recover(); r != nil { log.Error(...) }"
+    examples:
+      bad: "defer func() { recover() }()"
+      good: "defer func() { if r := recover(); r != nil { log.Error(ctx, \"panic recovered\", log.Any(\"err\", r)) } }()"
+
+  # 规则说明: 加锁后必须紧跟 defer unlock，防止因 panic 或提前 return 导致死锁
+  - id: SAFE-005
+    name: 锁操作必须配合 defer 解锁
+    severity: P1
+    pattern:
+      type: regex
+      match: '\.Lock\(\)'
+    message: "调用 .Lock() 后必须紧跟 defer .Unlock()，防止因函数提前 return 或 panic 导致死锁。正确模式：mu.Lock(); defer mu.Unlock()"
+    examples:
+      bad: "mu.Lock()\n// 业务代码\nmu.Unlock()"
+      good: "mu.Lock()\ndefer mu.Unlock()"
+
+  # 规则说明: goroutine 中不应用 _ 忽略错误，否则错误会被静默丢弃
+  - id: SAFE-006
+    name: goroutine 中禁止忽略错误
+    severity: P1
+    pattern:
+      type: regex
+      match: 'go func\(.*\).*\{[^}]*_ ='
+    message: "在 goroutine 中不能用 _ 忽略函数返回的 error。goroutine 中的错误无法冒泡到调用方，必须显式记录日志或通过 channel 传递。"
+    examples:
+      bad: "go func() { _ = processOrder(ctx, id) }()"
+      good: "go func() { if err := processOrder(ctx, id); err != nil { log.Error(ctx, \"process order failed\", log.ErrorField(err)) } }()"
+
+  # 规则说明: errors.New(fmt.Sprintf(...)) 是反模式，应直接使用 fmt.Errorf 或 errors.Errorf
+  - id: SAFE-007
+    name: 禁止 errors.New 嵌套 fmt.Sprintf
+    severity: P0
+    pattern:
+      type: regex
+      match: 'errors\.New\(fmt\.Sprintf\('
+    message: "禁止使用 errors.New(fmt.Sprintf(...)) 构造格式化错误。应直接使用 fmt.Errorf(\"...\", args) 或 errors.Errorf(\"...\", args)，更简洁且性能更好。"
+    examples:
+      bad: 'errors.New(fmt.Sprintf("user %d not found", id))'
+      good: 'fmt.Errorf("user %d not found", id)'
+
+  # 规则说明: 错误消息不应包含复杂格式化，保持简洁明了
+  # NOTE: 此规则针对 errors.Errorf 中过度使用 % 格式化占位符的情况，误报率中等，agent 需确认上下文
+  - id: SAFE-008
+    name: 错误消息避免过度格式化
+    severity: P1
+    pattern:
+      type: regex
+      match: 'errors\.Errorf\(.*%[a-z].*%[a-z].*%[a-z]'
+    message: "错误消息中超过 2 个格式化占位符时，建议封装为结构化错误类型，或用 errors.WithMessage 附加上下文，避免错误消息过于复杂难以维护。"
+    examples:
+      bad: 'errors.Errorf("update user failed: id=%d, name=%s, role=%s, status=%d", id, name, role, status)'
+      good: 'errors.Wrapf(err, "update user failed: id=%d", id)'
+
+  # 规则说明: 禁止用 _ 接收 error 返回值，所有 error 必须被处理
+  - id: SAFE-009
+    name: 禁止用 _ 接收 error 返回值
+    severity: P0
+    pattern:
+      type: regex
+      match: '[^a-zA-Z_]_ =[^=]'
+    message: "禁止使用 _ 忽略函数返回的 error。每个 error 都必须显式检查和处理。如果确实不需要处理，必须添加注释说明原因（如：// 此操作不影响主流程）。"
+    examples:
+      bad: '_ = db.Create(&user)'
+      good: 'if err := db.Create(&user).Error; err != nil { return errors.Wrap(err, "create user failed") }'
+
+  # 规则说明: 禁止用 fmt.Sprintf 拼接 JSON，应使用 json.Marshal 或结构体序列化
+  - id: SAFE-010
+    name: 禁止用 fmt.Sprintf 拼接 JSON
+    severity: P0
+    pattern:
+      type: regex
+      match: 'fmt\.Sprintf\(.*["''][{[]'
+    message: "禁止使用 fmt.Sprintf 拼接 JSON 字符串。字符串拼接容易引入转义错误和注入漏洞。应使用 json.Marshal() 序列化结构体，或使用官方 encoding/json 包。"
+    examples:
+      bad: 'body := fmt.Sprintf(`{"user_id": %d, "name": "%s"}`, id, name)'
+      good: "body, err := json.Marshal(struct{ UserID int64 `json:\"user_id\"`; Name string `json:\"name\"` }{UserID: id, Name: name})"

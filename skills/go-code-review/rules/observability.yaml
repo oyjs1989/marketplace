@@ -1,0 +1,101 @@
+rules:
+  # 规则说明: log.Any 传递数字类型时类型信息不明确，应使用 log.Int、log.Int64、log.Float64 等显式类型函数
+  # NOTE: 此规则误报率中等，log.Any 传 len() 或 count 变量是最明显的误用场景
+  - id: OBS-001
+    name: log.Any 禁止传递数字类型值
+    severity: P1
+    pattern:
+      type: regex
+      match: 'log\.Any\([^)]*\b(len\(|count|total|num|size|amount|qty)\b'
+    message: "禁止使用 log.Any() 传递数字类型的日志字段。应使用显式类型函数：整数用 log.Int() 或 log.Int64()，浮点数用 log.Float64()。显式类型让日志聚合系统能正确识别字段类型，便于统计分析。"
+    examples:
+      bad: 'log.Info(ctx, "query result", log.Any("count", len(users)))'
+      good: 'log.Info(ctx, "query result", log.Int("count", len(users)))'
+
+  # 规则说明: 日志字段 key 应使用 snake_case 命名，而非 PascalCase，符合日志平台字段规范
+  - id: OBS-002
+    name: 日志字段 key 必须使用 snake_case
+    severity: P1
+    pattern:
+      type: regex
+      match: 'log\.(String|Int|Int64|Float64|Bool|Any)\("[A-Z][a-zA-Z]*"'
+    message: "日志字段 key 必须使用 snake_case 命名（如 user_id、order_status），禁止使用 PascalCase（如 UserID、OrderStatus）。snake_case 是日志平台（ELK/Loki）的标准字段格式，便于统一查询和告警规则配置。"
+    examples:
+      bad: 'log.Int64("UserID", userID)'
+      good: 'log.Int64("user_id", userID)'
+
+  # 规则说明: Error 级别日志必须附带 log.ErrorField(err) 字段，确保错误对象被完整记录
+  # NOTE: 此规则误报率较高，仅检测 log.Error 调用，agent 需确认调用中是否包含 log.ErrorField
+  - id: OBS-003
+    name: Error 日志必须包含 ErrorField
+    severity: P1
+    pattern:
+      type: regex
+      match: 'log\.Error\('
+    message: "调用 log.Error() 时必须包含 log.ErrorField(err) 字段，将错误对象完整记录到日志中。仅记录错误消息字符串会丢失错误堆栈和类型信息，影响问题排查效率。正确格式：log.Error(ctx, \"操作失败\", log.ErrorField(err), log.String(\"key\", val))"
+    examples:
+      bad: 'log.Error(ctx, "create user failed", log.String("name", name))'
+      good: 'log.Error(ctx, "create user failed", log.ErrorField(err), log.String("name", name))'
+
+  # 规则说明: data/repository/store 层不应打日志，日志应在 service 层打印，避免重复日志和职责混乱
+  # NOTE: 此规则为多行上下文匹配，正则仅检测函数名包含 Repository/Store/Dao 的函数，误报率中等，
+  #       agent 需确认日志调用是否确实在 data 层函数内
+  - id: OBS-004
+    name: data 层禁止打日志
+    severity: P1
+    pattern:
+      type: regex
+      match: 'func \(.*\) [A-Za-z].*Repository\b|func \(.*\) [A-Za-z].*Store\b|func \(.*\) [A-Za-z].*Dao\b'
+    message: "Repository/Store/Dao 层（数据访问层）禁止直接调用 log.Info/log.Error 打日志。日志应在 Service 层统一管理，data 层只负责数据操作并返回 error。data 层打日志会导致：日志重复、日志缺少业务上下文、职责边界模糊。注意：此规则需结合函数体内容确认。"
+    examples:
+      bad: "func (r *userRepository) Create(ctx context.Context, user *User) error { log.Info(ctx, \"creating user\"); return r.db.Create(user).Error }"
+      good: "func (r *userRepository) Create(ctx context.Context, user *User) error { return r.db.Create(user).Error }"
+
+  # 规则说明: Error 日志必须包含足够的上下文字段，单独的 "fail" 消息缺乏排查价值
+  # NOTE: 此规则误报率较高，检测 log.Error 中消息以 fail 结尾但缺少字段的情况，agent 需综合判断
+  - id: OBS-005
+    name: Error 日志必须包含上下文字段
+    severity: P1
+    pattern:
+      type: regex
+      match: 'log\.Error\(ctx, "[^"]*fail[^"]*"\)'
+    message: "Error 日志消息必须附带足够的上下文字段（至少包含关键 ID 和错误对象）。仅有消息字符串的日志无法定位问题。必须包含：log.ErrorField(err) + 至少一个业务标识字段（如 user_id、order_id）。"
+    examples:
+      bad: 'log.Error(ctx, "create user fail")'
+      good: 'log.Error(ctx, "create user fail", log.ErrorField(err), log.Int64("user_id", userID))'
+
+  # 规则说明: 生产代码禁用 fmt.Println，应使用结构化日志框架
+  - id: OBS-006
+    name: 生产代码禁用 fmt.Println
+    severity: P0
+    pattern:
+      type: regex
+      match: 'fmt\.Println\('
+    message: "禁止在生产代码中使用 fmt.Println()。fmt.Println 输出无结构化格式、无日志级别、无上下文字段，无法被日志收集系统解析。应使用项目统一的结构化日志框架（如 log.Info/log.Debug）。"
+    examples:
+      bad: 'fmt.Println("user created:", user.ID)'
+      good: 'log.Info(ctx, "user created", log.Int64("user_id", user.ID))'
+
+  # 规则说明: 生产代码禁用 fmt.Printf，应使用结构化日志框架
+  - id: OBS-007
+    name: 生产代码禁用 fmt.Printf
+    severity: P0
+    pattern:
+      type: regex
+      match: 'fmt\.Printf\('
+    message: "禁止在生产代码中使用 fmt.Printf()。与 fmt.Println 相同，fmt.Printf 输出无结构化格式、无日志级别，无法被日志收集系统（ELK/Loki）解析聚合。应使用结构化日志框架（如 log.Info、log.Debug）替代。"
+    examples:
+      bad: 'fmt.Printf("processing order %d for user %s\n", orderID, userName)'
+      good: 'log.Info(ctx, "processing order", log.Int64("order_id", orderID), log.String("user_name", userName))'
+
+  # 规则说明: 错误消息不应使用绝对断言式措辞，应描述发生了什么而非系统的最终状态
+  - id: OBS-008
+    name: 错误消息避免绝对断言式措辞
+    severity: P2
+    pattern:
+      type: regex
+      match: '"(is terminating|is dead|has failed|is broken|is down|is crashed|is destroyed)"'
+    message: "错误消息应描述\"发生了什么\"而非用绝对断言描述系统状态。\"is dead\"、\"has failed\"等措辞在分布式系统中可能是误判（如临时网络抖动）。建议改用：\"failed to connect\"、\"request timed out\"、\"returned error\" 等描述性措辞。"
+    examples:
+      bad: 'return errors.New("database is dead")'
+      good: 'return errors.Wrap(err, "failed to connect to database")'
