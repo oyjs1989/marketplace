@@ -1,7 +1,7 @@
 {
   "name": "go-code-review",
-  "version": "4.0.0",
-  "description": "Go code review with three-tier architecture: quantitative tools + 38 YAML rules + 5 domain-expert AI agents (safety/data/design/quality/observability)",
+  "version": "5.0.0",
+  "description": "Go code review: go build/vet/staticcheck + YAML rule scanning + 5 domain-expert AI agents (safety/data/design/quality/observability)",
   "author": {
     "name": "jasonouyang",
     "email": "jasonouyang@futunn.com"

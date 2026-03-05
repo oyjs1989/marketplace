@@ -1,10 +1,11 @@
 {
+  "name": "jasonouyang-marketplace",
   "plugins": [
     {
       "name": "go-code-review",
       "source": "./skills/go-code-review",
-      "version": "3.0.0",
-      "description": "Unified Go code review plugin with 4 specialist agents based on FUTU's 97+ coding standards",
+      "version": "5.0.0",
+      "description": "Go code review: go build/vet/staticcheck + YAML rule scanning + 5 domain-expert AI agents (safety/data/design/quality/observability)",
       "author": {
         "name": "FUTU Development Team",
         "email": "dev@futunn.com"
