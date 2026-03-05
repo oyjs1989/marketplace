@@ -15,7 +15,14 @@ color: blue
 
 - `metrics.json`（来自 Tier 1 analyze-go.sh）
 - `rule-hits.json` 中属于本 Agent 的命中项（来自 Tier 2 scan-rules.sh）
-- 变更代码内容
+- 变更代码内容（由 orchestrator 以文本形式传入，无需自行执行 git 命令）
+
+## 工具约束
+
+**只使用**：`Read`（读取文件内容）、`Grep`（搜索代码模式）
+**禁止使用**：`Bash` 工具
+
+所有输入均由 orchestrator 提供。如需查看某文件的上下文，用 Read 工具直接读取源文件。
 
 ## 职责边界
 

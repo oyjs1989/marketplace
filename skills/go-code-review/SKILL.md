@@ -87,15 +87,16 @@ Each agent receives the full code diff plus the subset of `rule-hits.json` relev
 ### Step 1: 获取变更文件
 
 ```bash
-git diff master --name-only | grep '\.go$'
+# --diff-filter=AM 只取新增(A)和修改(M)的文件，排除已删除文件避免工具报 "file not found"
+git diff master --name-only --diff-filter=AM | grep '\.go$'
 # 或针对特定 commit
-git diff HEAD~1 --name-only | grep '\.go$'
+git diff HEAD~1 --name-only --diff-filter=AM | grep '\.go$'
 ```
 
 ### Step 2: 运行 Tier 1 量化分析
 
 ```bash
-git diff master --name-only | grep '\.go$' | bash tools/analyze-go.sh > /tmp/metrics.json
+git diff master --name-only --diff-filter=AM | grep '\.go$' | bash tools/analyze-go.sh > /tmp/metrics.json
 ```
 
 读取 `/tmp/metrics.json`，记录量化违规（文件 > 800 行、函数 > 80 行、嵌套 > 4 层）。
@@ -103,25 +104,49 @@ git diff master --name-only | grep '\.go$' | bash tools/analyze-go.sh > /tmp/met
 ### Step 3: 运行 Tier 2 规则扫描
 
 ```bash
-git diff master --name-only | grep '\.go$' | bash tools/scan-rules.sh > /tmp/rule-hits.json
+git diff master --name-only --diff-filter=AM | grep '\.go$' | bash tools/scan-rules.sh > /tmp/rule-hits.json
 ```
 
-读取 `/tmp/rule-hits.json`，记录所有 regex 命中。
+读取 `/tmp/rule-hits.json`。**实际 JSON 结构**：
 
-### Step 4: 启动 5 个专家 Agent（并行）
+```json
+{
+  "hits": [
+    {
+      "rule_id": "SAFE-001",
+      "severity": "P0",
+      "file": "service/user.go",
+      "line": 45,
+      "matched": "return fmt.Errorf(\"get user failed: %v\", err)",
+      "message": "禁止使用 fmt.Errorf() 创建错误..."
+    }
+  ],
+  "summary": { "total": 12, "P0": 3, "P1": 8, "P2": 1 }
+}
+```
 
-所有 agent 同时接收：
-- 变更代码内容（通过 `git diff master -- <files>` 读取）
-- `/tmp/metrics.json`（Tier 1 结果）
-- `/tmp/rule-hits.json` 中属于各自领域的命中项
+字段说明：`file`（文件路径）、`line`（行号）、`matched`（匹配的源码行）、`summary.total`（总命中数）。
 
-**Agent 分工与 Tier 2 关系：**
+### Step 4: 读取代码内容，启动 Agent
+
+**先用 Bash 读取变更代码**，再将内容以文本形式传给 agents。**Agents 自身只使用 Read/Grep，不执行 Bash 命令**。
+
+```bash
+# 读取变更内容（供 agent 分析）
+git diff master --diff-filter=AM -- $(git diff master --name-only --diff-filter=AM | grep '\.go$' | tr '\n' ' ')
+```
+
+**变更文件数 ≤ 30**：并行启动全部 5 个 agent：
 
 - **safety agent** — 确认 SAFE-001~010 命中；处理并发/context/防御性编程判断
 - **data agent** — 确认 DATA-001~010 命中；处理 N+1/序列化/事务边界判断
 - **design agent** — 无 Tier 2 规则；专注 UNIX 7 原则 + 5 大代码变坏根源
 - **quality agent** — 确认 QUAL-001~010 命中 + 综合 metrics.json；处理命名语义/注释质量
 - **observability agent** — 确认 OBS-001~008 命中；处理日志分层策略/错误消息质量
+
+**变更文件数 > 30**（大 diff 分批启动，避免上下文溢出和权限弹窗堆积）：
+- **第一批**（高风险域）：safety + data — 等两个 agent 返回后
+- **第二批**：design + quality + observability
 
 ### Step 5: 聚合输出
 
