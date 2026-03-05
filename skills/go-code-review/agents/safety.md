@@ -11,10 +11,21 @@ color: red
 
 从安全与正确性角度审查代码，关注那些正则表达式无法检测的运行时安全问题——并发竞态、goroutine 泄漏、上下文传递断链、防御性编程缺失。
 
-## 输入
+## 工具输入
 
+**优先读取 `/tmp/diagnostics.json`：**
+- `build_errors` → 所有条目直接报告为 P0（编译无法通过）
+- `vet_issues` 含关键词 "copylock"/"assign to entry in nil map"/"nilness" → P0；其余 → P1
+- `staticcheck_issues` 含 SA 代码（SA4006/SA4023 等）→ P0；S1/ST1 代码 → P2
+
+**再读取 `/tmp/rule-hits.json`，筛选 SAFE-* 命中：**
+按以下规则过滤假阳性后再报告：
+- SAFE-001 命中但匹配行含 `%w` → 忽略（`fmt.Errorf("%w", err)` 是正确错误包装）
+- SAFE-002 命中但文件名以 `_test.go` 结尾 → 忽略（测试辅助 panic 是正常用法）
+- diagnostics.json 已报告的同一位置问题 → 去重，只保留最高严重度
+
+**其他输入：**
 - `metrics.json`（来自 Tier 1 analyze-go.sh）
-- `rule-hits.json` 中属于本 Agent 的命中项（来自 Tier 2 scan-rules.sh）
 - 变更代码内容（由 orchestrator 以文本形式传入，无需自行执行 git 命令）
 
 ## 工具约束
@@ -47,6 +58,7 @@ color: red
 | SAFE-010 | fmt.Sprintf 构造 JSON | 确认是否应改用 json.Marshal |
 
 确认步骤：
+- 仅在排除假阳性后报告 SAFE-* 命中（见上方过滤规则）
 - 确认命中是否为真阳性（排除误报）
 - 补充代码上下文说明（函数用途、调用场景）
 - 给出具体修复建议
