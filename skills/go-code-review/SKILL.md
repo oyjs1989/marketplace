@@ -1,7 +1,7 @@
 ---
 name: go-code-review
 description: This skill should be used when the user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, error handling patterns, concurrency safety, design philosophy, or UNIX principles. Orchestrates comprehensive Go code reviews using a three-tier architecture: quantitative tools + YAML pattern scanning + 5 domain-expert AI agents.
-version: 4.0.0
+version: 5.0.0
 ---
 
 # Go Code Review Skill (v4.0.0)
@@ -24,16 +24,19 @@ This skill activates when users need help with:
 输入：git diff 变更的 Go 文件
          │
          ▼
-┌─────────────────────────────────┐
-│  Tier 1: tools/analyze-go.sh   │  → metrics.json
-│  量化：文件行数/函数行数/嵌套深度  │    (过 800/80/4 的违规)
-└─────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│  Tier 1: tools/run-go-tools.sh                      │  → diagnostics.json
+│  go build（编译错误, P0）                             │
+│  go vet（类型/格式检查, ~0 假阳性）                   │
+│  staticcheck（SSA 分析，可选安装）                    │
+└─────────────────────────────────────────────────────┘
          │
          ▼
-┌─────────────────────────────────┐
-│  Tier 2: tools/scan-rules.sh   │  → rule-hits.json
-│  模式匹配：38 条 YAML 规则 regex │    (SAFE/DATA/QUAL/OBS 命中)
-└─────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│  Tier 2: tools/scan-rules.sh                        │  → rule-hits.json
+│  修复后的 YAML 规则（兜底扫描）                       │
+│  预期 <50 条命中，假阳性大幅降低                       │
+└─────────────────────────────────────────────────────┘
          │
          ▼
 ┌──────────────────────────────────────────────────────────┐
@@ -93,13 +96,22 @@ git diff master --name-only --diff-filter=AM | grep '\.go$'
 git diff HEAD~1 --name-only --diff-filter=AM | grep '\.go$'
 ```
 
-### Step 2: 运行 Tier 1 量化分析
+### Step 2: 运行 Tier 1 工具链分析
 
 ```bash
-git diff master --name-only --diff-filter=AM | grep '\.go$' | bash tools/analyze-go.sh > /tmp/metrics.json
+git diff master --name-only --diff-filter=AM | grep '\.go$' | bash tools/run-go-tools.sh > /tmp/diagnostics.json
 ```
 
-读取 `/tmp/metrics.json`，记录量化违规（文件 > 800 行、函数 > 80 行、嵌套 > 4 层）。
+读取 `/tmp/diagnostics.json`，记录：
+- `build_errors`：编译错误（P0，必须修复，来自 `go build`）
+- `vet_issues`：类型/格式问题（P0/P1，来自 `go vet`）
+- `staticcheck_issues`：SSA 分析结果（SA*→P0，S1*/ST1*→P2，来自 `staticcheck`，未安装则为空）
+- `large_files`：行数 > 800 的文件（参考数据）
+
+如未安装 staticcheck，可提前安装：
+```bash
+go install honnef.co/go/tools/cmd/staticcheck@latest
+```
 
 ### Step 3: 运行 Tier 2 规则扫描
 
@@ -138,10 +150,10 @@ git diff master --diff-filter=AM -- $(git diff master --name-only --diff-filter=
 
 **变更文件数 ≤ 30**：并行启动全部 5 个 agent：
 
-- **safety agent** — 确认 SAFE-001~010 命中；处理并发/context/防御性编程判断
+- **safety agent** — 读取 diagnostics.json（build_errors + vet_issues + staticcheck SA*）；确认 rule-hits.json 中 SAFE-001~010 命中（按规则说明过滤假阳性）
 - **data agent** — 确认 DATA-001~010 命中；处理 N+1/序列化/事务边界判断
 - **design agent** — 无 Tier 2 规则；专注 UNIX 7 原则 + 5 大代码变坏根源
-- **quality agent** — 确认 QUAL-001~010 命中 + 综合 metrics.json；处理命名语义/注释质量
+- **quality agent** — 读取 diagnostics.json（large_files + staticcheck S1*/ST1*）；确认 QUAL-001~010 命中
 - **observability agent** — 确认 OBS-001~008 命中；处理日志分层策略/错误消息质量
 
 **变更文件数 > 30**（大 diff 分批启动，避免上下文溢出和权限弹窗堆积）：
@@ -161,7 +173,7 @@ git diff master --diff-filter=AM -- $(git diff master --name-only --diff-filter=
 **重要**：所有审查输出必须使用中文。
 
 ```markdown
-# Go 代码审查报告（v4.0.0）
+# Go 代码审查报告（v5.0.0）
 
 ## 审查摘要
 
