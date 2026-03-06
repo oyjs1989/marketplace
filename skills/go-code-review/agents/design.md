@@ -35,7 +35,7 @@ color: purple
 
 当 rule-hits.json 中出现 QUAL-002、QUAL-003、QUAL-004 等质量规则时，可从设计角度补充分析根因（例如：mutable global 是设计问题，不只是规则违反）。
 
-## UNIX 7 大设计原则检查
+## UNIX 设计原则检查（10 条）
 
 ### 原则 1：KISS 原则（大道至简）
 
@@ -320,6 +320,201 @@ defer func() {
 - 是否有 `_ = err` 或 `err` 被赋值后未判断
 - `recover()` 后是否有日志记录
 - 错误传递链是否完整（中途是否有被丢弃的错误）
+
+### 原则 8：经济性原则（Economy）
+
+不要为了"工程规范感"而过度抽象；最少的代码表达最准确的意图。程序员时间比机器时间宝贵，每一层抽象都要付出可读性和维护性的代价。
+
+```go
+// 反例：为"未来的测试"预先抽象，当前只有一个实现
+type ConfigLoader interface {
+    Load(path string) (*Config, error)
+}
+type FileConfigLoader struct{}
+func (f *FileConfigLoader) Load(path string) (*Config, error) { ... }
+
+// 调用方
+type App struct {
+    loader ConfigLoader // 唯一实现，接口只是消耗了程序员的理解成本
+}
+
+// 正例：直接用函数，需要测试时接受 *Config 而非 loader
+func LoadConfig(path string) (*Config, error) { ... }
+
+// 测试：直接构造 Config，不需要 mock loader
+func TestProcess(t *testing.T) {
+    cfg := &Config{Timeout: 30}
+    result := Process(cfg)
+    // ...
+}
+```
+
+```go
+// 反例：参数列表过长，抽象未找到正确边界
+func CreateOrder(userID int64, productID int64, quantity int, price float64,
+    currency string, couponCode string, addressID int64, note string) (*Order, error) {
+    // 8 个参数意味着调用方必须记住所有顺序
+}
+
+// 正例：封装成请求对象，清晰且可扩展
+type CreateOrderRequest struct {
+    UserID    int64
+    ProductID int64
+    Quantity  int
+    Price     float64
+    Currency  string
+    CouponCode string
+    AddressID int64
+    Note      string
+}
+
+func CreateOrder(ctx context.Context, req *CreateOrderRequest) (*Order, error) { ... }
+```
+
+**检查点**：
+- 每增加一个抽象层，问：如果没有它，会出什么问题？
+- 接口是否只有一个实现且短期内不会有第二个（此时 interface 是过早抽象）
+- 函数参数是否超过 5 个（过长的参数列表是抽象未找到正确边界的信号）
+- struct 嵌套是否超过 3 层（抽象经济性失控的信号）
+- 是否有只调用一次的 wrapper 函数且没有附加价值
+
+---
+
+### 原则 9：扩展性原则（Extensibility）
+
+好的设计让增加新类型/新行为不需要修改核心逻辑（开闭原则的 UNIX 表述）。把知识折叠进数据，让逻辑保持稳定。
+
+```go
+// 反例：枚举型 switch，新增 provider 必须修改 Process 函数
+func Process(provider string, data []byte) error {
+    switch provider {
+    case "aws":
+        return processAWS(data)
+    case "aliyun":
+        return processAliyun(data)
+    // 每次新增 provider 都要改这里，违反开闭原则
+    }
+    return errors.New("unknown provider")
+}
+
+// 正例：数据驱动，新增 provider 只需在 map 里加一条
+type ProviderHandler func(data []byte) error
+
+var providers = map[string]ProviderHandler{
+    "aws":    processAWS,
+    "aliyun": processAliyun,
+}
+
+func Process(provider string, data []byte) error {
+    handler, ok := providers[provider]
+    if !ok {
+        return errors.Errorf("unknown provider: %s", provider)
+    }
+    return handler(data)
+}
+// 新增 tencent：providers["tencent"] = processTencent，Process 不变
+```
+
+```go
+// 反例：添加新消息类型需要修改 Dispatch 核心逻辑
+func Dispatch(msgType int, payload []byte) error {
+    if msgType == 1 {
+        return handleOrder(payload)
+    } else if msgType == 2 {
+        return handlePayment(payload)
+    } else if msgType == 3 {
+        return handleRefund(payload)
+    }
+    return errors.Errorf("unknown msg type: %d", msgType)
+}
+
+// 正例：注册模式，Dispatch 对扩展开放，对修改关闭
+type Handler func(payload []byte) error
+
+var handlers = map[int]Handler{}
+
+func Register(msgType int, h Handler) {
+    handlers[msgType] = h
+}
+
+func Dispatch(msgType int, payload []byte) error {
+    h, ok := handlers[msgType]
+    if !ok {
+        return errors.Errorf("unknown msg type: %d", msgType)
+    }
+    return h(payload)
+}
+```
+
+**检查点**：
+- 是否有 `switch/if-else` 枚举所有类型的分支，新增类型时必须修改该函数
+- 能否将这类分支用 `map[key]Handler` 数据驱动替代
+- 新增一种业务类型时，是否需要修改超过 1 个函数（超过 1 个说明扩展性不足）
+- 是否有 handler/plugin 注册场景可以使用注册模式简化扩展
+
+---
+
+### 原则 10：优化原则（Optimization）
+
+先写清晰可运行的代码，再用 profiling 数据驱动优化。凭感觉提前优化是万恶之源——它牺牲了可读性，却换来了未经证明的性能收益。
+
+```go
+// 反例：过早优化牺牲了代码清晰性
+func GetActiveUsers(users []*User) []*User {
+    // "优化"：预分配精确容量
+    result := make([]*User, 0, len(users))
+    for i := 0; i < len(users); i++ { // 不用 range，"避免 bound check"（无benchmark支撑）
+        if users[i].Status == 1 { // 魔法数字，且回避使用命名常量
+            result = append(result, users[i])
+        }
+    }
+    return result
+}
+
+// 正例：先写清晰，有 profiling 数据再优化
+func GetActiveUsers(users []*User) []*User {
+    var result []*User
+    for _, u := range users {
+        if u.Status == StatusActive {
+            result = append(result, u)
+        }
+    }
+    return result
+}
+// 如果 profiling 显示此处是热路径，再加 make([]T, 0, len(users))
+```
+
+```go
+// 反例：sync.Pool 使用无热路径数据支撑
+var bufPool = sync.Pool{
+    New: func() any { return new(bytes.Buffer) },
+}
+
+// GetUserInfo 每秒调用不超过 100 次，完全不是热路径
+// 这里的 sync.Pool 带来了额外的代码复杂度，却没有可测量的收益
+func GetUserInfo(id int64) (string, error) {
+    buf := bufPool.Get().(*bytes.Buffer)
+    defer func() {
+        buf.Reset()
+        bufPool.Put(buf)
+    }()
+    // ... 使用 buf
+}
+
+// 正例：直接分配，简单清晰；热路径才引入 pool
+func GetUserInfo(id int64) (string, error) {
+    var buf bytes.Buffer
+    // ... 使用 buf
+}
+```
+
+**检查点**：
+- 是否有缺乏 benchmark 或 pprof 证据支撑的"性能优化"注释（如 `// avoid bound check`、`// reduce alloc`）
+- 是否用位运算替代清晰的逻辑运算（如 `x&1` 替代 `x%2==0`），却没有注释说明为何需要这个优化
+- `sync.Pool`、对象池、预分配等复杂机制是否有 profiling 数据证明当前是热路径
+- 循环中是否有牺牲可读性的手工展开或奇技淫巧，却没有 benchmark 支撑
+
+---
 
 ## 代码变坏 6 大根源
 

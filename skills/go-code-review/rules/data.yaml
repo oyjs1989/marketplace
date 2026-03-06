@@ -122,3 +122,55 @@ rules:
     examples:
       bad: "for _, id := range ids { db.Delete(&User{}, id) }"
       good: 'db.Where("id IN ?", ids).Delete(&User{})'
+
+  # 规则说明: .Scan() 绕过 GORM 模型映射，直接扫描到任意结构，容易导致字段映射错误或缺少类型约束
+  # NOTE: 此规则在复杂聚合查询（GROUP BY、JOIN 返回自定义结构）等场景可豁免，agent 需结合上下文判断
+  - id: DATA-011
+    name: 一般情况下禁止使用 .Scan()
+    severity: P1
+    pattern:
+      type: regex
+      match: '\.Scan\(&'
+    message: "一般情况下禁止使用 .Scan() 查询数据。Scan() 绕过 GORM 模型约束，直接映射到任意 struct，容易导致字段映射错误、缺少类型安全保障。应使用 .Take()（单条）或 .Find()（多条）配合 GORM 模型类型。豁免场景：复杂聚合查询（GROUP BY、JOIN 返回非标准模型结构）时可使用，但需添加注释说明原因。"
+    examples:
+      bad: "db.Where(\"id = ?\", id).Scan(&result)"
+      good: "db.Where(\"id = ?\", id).Take(&user)"
+
+  # 规则说明: GORM 查询/修改的 WHERE 条件必须通过 .Where() 方法明确声明，禁止将条件内联在模型 struct 中
+  # NOTE: 此规则误报率中等，正则匹配 Find/Take/First/Updates/Delete 中内联 struct 字面量的情况，agent 需确认
+  - id: DATA-012
+    name: GORM 条件必须通过 .Where() 明确声明
+    severity: P1
+    pattern:
+      type: regex
+      match: '\.(Find|Take|First|Updates|Delete)\(&[A-Z][a-zA-Z0-9]*\s*\{[^}]+'
+    message: "GORM 查询/修改时，WHERE 条件必须通过 .Where() 方法明确声明，禁止将条件内联在模型 struct 初始化中（如 .Find(&User{Status: 1})）。内联条件在零值字段时行为不可预期（GORM 会忽略零值），且可读性差、易引发隐式全表扫描。正确模式：db.Where(\"status = ?\", 1).Find(&users)。"
+    examples:
+      bad: "db.Find(&User{Status: 1, Type: 2})"
+      good: 'db.Where("status = ? AND type = ?", 1, 2).Find(&users)'
+
+  # 规则说明: GORM 链式调用超过 3 个方法时应换行，每个方法独占一行，提高可读性
+  # NOTE: 此规则误报率中等，正则检测单行超过 4 个 GORM 链式调用方法，agent 需确认是否需要换行
+  - id: DATA-013
+    name: GORM 长链式调用必须换行格式化
+    severity: P2
+    pattern:
+      type: regex
+      match: 'db\.[A-Za-z]+\(.*\)\.[A-Za-z]+\(.*\)\.[A-Za-z]+\(.*\)\.[A-Za-z]+'
+    message: "GORM 链式调用超过 3 个方法时，必须按方法换行格式化，每个方法独占一行并缩进，禁止所有方法写在同一行。换行格式能显著提高可读性，便于 code review 时快速理解查询结构和条件。正确格式：db.Model(&model{}).\n    Where(\"id = ?\", id).\n    Select(\"id, name, status\").\n    Find(&results)"
+    examples:
+      bad: 'return db.Model(&model.PermissionGroup{}).Where("id = ? ", id).Select("group_code, permission_list").Updates(map[string]interface{}{"permission_list": list}).Error'
+      good: "return db.Model(&model.PermissionGroup{}).\n    Where(\"id = ?\", id).\n    Select(\"group_code, permission_list\").\n    Updates(map[string]interface{}{\"permission_list\": list}).\n    Error"
+
+  # 规则说明: 不涉及 JSON 序列化/反序列化的结构体字段，禁止添加 json tag，避免不必要的标签噪声
+  # NOTE: 此规则需要 agent 结合结构体的使用场景判断，纯数据库映射 struct 应去掉 json tag
+  - id: DATA-014
+    name: 纯数据库映射 struct 禁止添加 json tag
+    severity: P2
+    pattern:
+      type: regex
+      match: 'gorm:"[^"]*"[^`\n]*json:"[^"]*"'
+    message: "仅用于数据库映射（有 gorm tag）且不涉及 JSON 序列化/反序列化的结构体字段，禁止添加 json tag。不必要的 json tag 会造成代码噪声，且当字段值为零值时 omitempty 可能导致字段丢失。结构体的使用场景决定标签类型：① 纯 DB 模型（model/）只加 gorm tag；② HTTP 请求/响应（DTO/VO）可加 json tag；③ 两者兼用时需权衡，通常应拆分为独立 struct。注意：此规则需 agent 判断 struct 是否用于 HTTP 接口，正则命中带双标签的字段，误报率中等。"
+    examples:
+      bad: 'Status int `gorm:"column:status;not null" json:"status"` // 纯 DB 模型不需要 json tag'
+      good: 'Status int `gorm:"column:status;not null"` // 纯 DB 模型只需 gorm tag'
