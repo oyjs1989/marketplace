@@ -1,6 +1,6 @@
 ---
 name: go-code-review
-description: This skill should be used when the user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, error handling patterns, concurrency safety, design philosophy, or UNIX principles. Orchestrates comprehensive Go code reviews using a three-tier architecture: quantitative tools + YAML pattern scanning + 5 domain-expert AI agents.
+description: 'This skill should be used when the user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, error handling patterns, concurrency safety, design philosophy, or UNIX principles. Orchestrates comprehensive Go code reviews using a three-tier architecture: quantitative tools + YAML pattern scanning + 5 domain-expert AI agents.'
 version: 5.0.0
 ---
 

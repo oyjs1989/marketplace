@@ -291,6 +291,41 @@ func GetUserOrders(ctx context.Context, userID int64) ([]*Order, error) {
 - HTTP 状态码直接写（如 `200`、`404`）是否应该用 `http.StatusOK`、`http.StatusNotFound`
 - 超时时间、限制数量、重试次数等是否都有命名常量
 
+### 7. 命名信息冗余
+
+各层级的命名上下文不应重复出现——包名、文件名、类型名已经提供了上下文，成员名中不应再包含这些信息。
+
+```go
+// 反例：类型名/包名在字段/方法中重复
+package file
+
+type FileProperty struct { ... }   // 使用时：file.FileProperty（"file" 出现两次）
+func (f *File) FileClose() {}      // 使用时：f.FileClose()（"File" 出现两次）
+
+type User struct {
+	UserID   int64   // 使用时：user.UserID（"User" 重复）
+	UserName string  // 应为 Name
+	UserAge  int     // 应为 Age
+}
+
+// 正例：每层信息只出现一次
+package file
+
+type Property struct { ... }       // 使用时：file.Property（清晰无冗余）
+func (f *File) Close() {}          // 使用时：f.Close()
+
+type User struct {
+	ID   int64   // 使用时：user.ID
+	Name string
+	Age  int
+}
+```
+
+**检查点**：
+- 结构体字段名是否包含了结构体名前缀（`User.UserID` → `User.ID`）
+- 包级别函数/类型名是否包含了包名（`utils.StringUtils` → `utils.Format`）
+- 方法名是否包含了接收者类型名（`file.FileClose()` → `file.Close()`）
+
 ## 输出格式
 
 **重要**: 所有问题描述和建议必须使用中文输出。

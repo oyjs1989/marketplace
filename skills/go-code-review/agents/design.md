@@ -321,7 +321,7 @@ defer func() {
 - `recover()` 后是否有日志记录
 - 错误传递链是否完整（中途是否有被丢弃的错误）
 
-## 代码变坏 5 大根源
+## 代码变坏 6 大根源
 
 ### 根源 1：重复代码（DRY 违反）
 
@@ -417,6 +417,15 @@ func ProcessOrder(status OrderStatus, amount Money) error {
 - 业务对象全是 `map[string]interface{}` 或裸 `string/int`
 - 相关的两个值（如 amount + currency）总是一起传递但没有封装成类型
 
+**领域模型缺失的代价（日历应用案例）**：
+
+以 `userid_date` 为 key 记录日程，看似简单。但每次需求变化都要推翻设计：
+- 分发任务给 100w 人 → 原 key 结构无法支撑，改 DB
+- 查询两人共同任务 → 多人 join 不现实
+- 引入群组概念 → 数据结构再次推翻
+
+**正确做法**：先研究领域内的成熟模型（如权限系统参考 RBAC/DAC），构建通用领域抽象，再基于抽象实现业务逻辑。遇到新需求只需往模型里填内容，而不是推翻重来。
+
 ### 根源 3：OOP 滥用（OOP abuse）
 
 不合理的嵌入/继承关系，struct 过度方法化。
@@ -465,7 +474,34 @@ type User struct {
 
 ### 根源 4：对合理性缺乏苛求（Lack of rigor）
 
-该用 defer 不用，该 early return 不 return，该用 goroutine 的地方串行。
+"两种写法都 ok，你随便挑一种吧"——这种态度是代码变坏的温床。该用 defer 不用，该 early return 不 return，该用 goroutine 的地方串行。
+
+**关键原则**：不一开始就进入最合理的状态，在后续协作中，其他同学很可能犯错。
+
+```go
+// 反例：锁释放不用 defer（"两种写法都行" 的陷阱）
+func (i *IPGetter) Get(cardName string) string {
+	i.l.Lock()
+	ip, err := getNetIP(cardName)
+	if err == nil {
+		i.m[cardName] = ip
+	}
+	i.l.Unlock() // 看起来没问题，但未来如果加了 early return，就会忘记解锁！
+	return ip
+}
+
+// 正例：始终用 defer，"进入最合理的状态"
+func (i *IPGetter) Get(cardName string) string {
+	i.l.Lock()
+	defer i.l.Unlock() // 无论何时 return，锁都会被释放
+	ip, err := getNetIP(cardName)
+	if err != nil {
+		return "127.0.0.1"
+	}
+	i.m[cardName] = ip
+	return ip
+}
+```
 
 ```go
 // 反例：cleanup 不用 defer，有提前 return 风险
@@ -594,6 +630,53 @@ func (r *OrderRepository) Create(ctx context.Context, order *Order) (*Order, err
 - service 层是否有 HTTP 相关代码
 - repository 层是否有业务逻辑
 - 分层是否清晰：handler → service → repository
+
+### 根源 6：决策失效（Stale Decisions）
+
+初版代码结构清晰，但随着业务增长，某个分支逻辑不断膨胀，导致函数内不同抽象层次的代码混在一起——顶层流程与实现细节不再分离。
+
+```go
+// 反例：初期合理，但随需求增长 isMerge 分支膨胀后变成问题
+func Update(key Key, isMerge bool, ...) error {
+	info, err := s.Get(key)
+	if err != nil {
+		return err
+	}
+	update(info, ...)
+	if !isMerge {
+		// 初期 10 行，后来膨胀到 50+ 行的校验细节
+		// 读者在读顶层流程时突然"掉入"实现细节，大脑 cache 被撑满
+		if key.DomainID == folderDomainID && len(info.AccessInfos) > MaxFolderNum {
+			return errors.Errorf(...)
+		}
+		if len(info.AccessInfos) > MaxNum {
+			return errors.Errorf(...)
+		}
+		// ... 未来继续增长 ...
+	}
+	return s.setCKV(generateKey(&key), updateBuf)
+}
+
+// 正例：主流程保持在同一抽象层次，细节提取为独立函数
+func Update(key Key, isMerge bool, ...) error {
+	info, err := s.Get(key)
+	if err != nil {
+		return err
+	}
+	update(info, ...)
+	if !isMerge {
+		if err := validatePrivilegeLimit(info, key); err != nil { // 细节在函数里
+			return err
+		}
+	}
+	return s.persist(key, info)
+}
+```
+
+**判断标准**：
+- 函数某一分支（if/else/case 块）的代码量远超函数其余部分（超过函数总长度的 50%）
+- 顶层流程代码与实现细节混在同一缩进层次（读者必须"掉入"细节才能理解全貌）
+- 函数参数列表随业务增长不断追加（超过 5 个参数通常意味着需要重构为结构体参数）
 
 ## 输出格式
 

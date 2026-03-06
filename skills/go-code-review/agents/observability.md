@@ -366,6 +366,49 @@ func (s *PaymentService) ProcessPayment(ctx context.Context, orderID, userID int
 - 所有错误日志必须包含 `log.FieldError(err)`
 - 字段 key 使用 `snake_case`（符合 QUAL 规则）
 
+### 7. 日志噪声（缄默原则）
+
+正常请求是否会产生大量日志噪声，将真正的错误信号淹没其中。
+
+**黄金标准**：抽查一个健康实例的日志，应该只看到：
+- 每分钟请求量和延时分布的 stat 日志
+- 无任何 Error 日志
+
+看到这种日志就代表：这一分钟成功率 100%，没任何问题。这才是"沉默是最好的消息"。
+
+```go
+// 反例：每个请求都打 Info 日志，高并发下噪声极大
+func HandleRequest(ctx context.Context, req *Request) {
+	log.Info(ctx, "request received", log.String("type", req.Type))
+	result, err := process(req)
+	if err != nil {
+		log.Error(ctx, "process failed", log.FieldError(err))
+		return
+	}
+	log.Info(ctx, "request success", // 正常路径不需要日志，滚滚而来的 Info 会淹没 Error
+		log.String("type", req.Type),
+		log.Any("result", result))
+}
+
+// 正例：沉默是最好的消息——成功路径不打日志，stat 计数体现成功率
+func HandleRequest(ctx context.Context, req *Request) {
+	result, err := process(req)
+	if err != nil {
+		log.Error(ctx, "process failed",
+			log.FieldError(err),
+			log.String("type", req.Type))
+		return
+	}
+	_ = result // 成功路径：无日志，stat counter 计数，监控看成功率
+}
+```
+
+**检查点**：
+- 正常成功路径是否有 Info 日志（健康实例应该沉默）
+- 循环内是否每次迭代都打 Info 日志（应改为循环结束后汇总打印，或只打异常）
+- Handler 层是否每个请求都打 "request received"/"request success"（用 stat 替代）
+- 日志量在高并发时是否会成为性能瓶颈（10w QPS × 每请求 3 行日志 = 30w 行/秒）
+
 ## 输出格式
 
 **重要**: 所有问题描述和建议必须使用中文输出。
