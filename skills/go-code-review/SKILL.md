@@ -40,12 +40,13 @@ This skill activates when users need help with:
          │
          ▼
 ┌──────────────────────────────────────────────────────────┐
-│  Tier 3: 5 个领域专家 Agent（并行）                         │
+│  Tier 3: 6 个领域专家 Agent（并行）                         │
 │  🔴 safety      │ 安全与正确性，上下文并发判断              │
 │  🗄️  data        │ 数据层，N+1，序列化，类型语义             │
 │  🏗️  design      │ UNIX 7 原则，领域模型，代码变坏根源       │
 │  📐 quality     │ 综合 metrics.json，命名语义，可读性       │
 │  👁️  observability│ 日志分层策略，错误消息质量               │
+│  🧩 business    │ 业务需求推断，逻辑漏洞，边界缺失分析       │
 └──────────────────────────────────────────────────────────┘
          │
          ▼
@@ -73,7 +74,7 @@ Scans against 38 deterministic regex rules across four YAML files:
 - `rules/quality.yaml` — QUAL-001 to QUAL-010
 - `rules/observability.yaml` — OBS-001 to OBS-008
 
-### Tier 3 — 5 个领域专家 Agent
+### Tier 3 — 6 个领域专家 Agent
 
 | Agent | Expert Perspective |
 |-------|--------------------|
@@ -82,6 +83,7 @@ Scans against 38 deterministic regex rules across four YAML files:
 | design (purple) | 架构设计哲学：能活过百万行代码吗？ |
 | quality (green) | 代码质量：新人 5 分钟能看懂吗？ |
 | observability (yellow) | 可观测性：凌晨 3 点能快速定位吗？ |
+| business (orange) | 业务需求：实现的是用户真正需要的吗？ |
 
 Each agent receives the full code diff plus the subset of `rule-hits.json` relevant to its domain. Agents confirm Tier 2 hits with business context and surface additional judgment-based issues that regex cannot detect.
 
@@ -148,16 +150,17 @@ git diff master --name-only --diff-filter=AM | grep '\.go$' | bash tools/scan-ru
 git diff master --diff-filter=AM -- $(git diff master --name-only --diff-filter=AM | grep '\.go$' | tr '\n' ' ')
 ```
 
-**变更文件数 ≤ 30**：并行启动全部 5 个 agent：
+**变更文件数 ≤ 30**：并行启动全部 6 个 agent：
 
 - **safety agent** — 读取 diagnostics.json（build_errors + vet_issues + staticcheck SA*）；确认 rule-hits.json 中 SAFE-001~010 命中（按规则说明过滤假阳性）
 - **data agent** — 确认 DATA-001~010 命中；处理 N+1/序列化/事务边界判断
 - **design agent** — 无 Tier 2 规则；专注 UNIX 7 原则 + 5 大代码变坏根源
 - **quality agent** — 读取 diagnostics.json（large_files + staticcheck S1*/ST1*）；确认 QUAL-001~010 命中
 - **observability agent** — 确认 OBS-001~008 命中；处理日志分层策略/错误消息质量
+- **business agent** — 无 Tier 2 规则；读取变更文件**完整内容**（非仅 diff）；推断业务意图，识别业务逻辑漏洞、边界缺失、状态机错误、幂等性风险、权限归属缺漏
 
 **变更文件数 > 30**（大 diff 分批启动，避免上下文溢出和权限弹窗堆积）：
-- **第一批**（高风险域）：safety + data — 等两个 agent 返回后
+- **第一批**（高风险域）：safety + data + business — 等三个 agent 返回后
 - **第二批**：design + quality + observability
 
 ### Step 5: 聚合输出
@@ -219,4 +222,5 @@ Individual agents can be invoked directly without running the full orchestrator:
 直接调用 design agent
 直接调用 quality agent
 直接调用 observability agent
+直接调用 business agent
 ```
