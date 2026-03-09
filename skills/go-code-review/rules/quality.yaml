@@ -128,7 +128,7 @@ rules:
 
   # 规则说明: 切片和 map 必须通过 make() 初始化，不能使用字面量 {} 初始化（unmarshal/scan 目标变量除外）
   - id: QUAL-011
-    name: 切片/map 必须通过 make() 初始化
+    name: 禁止使用字面量 {} 初始化切片/map，应使用 make()
     severity: P1
     pattern:
       type: regex
@@ -189,6 +189,19 @@ rules:
     examples:
       bad: "func recieveMessage(ctx context.Context) error { ... }"
       good: "func receiveMessage(ctx context.Context) error { ... }"
+
+  # 规则说明: 切片变量应使用 make 初始化，var 声明的切片值为 nil，json.Marshal 序列化为 null 而非 []
+  # NOTE: 此规则需结合上下文判断——用于 json.Unmarshal/db.Scan/proto.Unmarshal 的接收变量可豁免
+  - id: QUAL-018
+    name: 切片变量禁用 var 声明，应使用 make 初始化
+    severity: P1
+    pattern:
+      type: regex
+      match: '^\s+var [a-zA-Z][a-zA-Z0-9]* \[\]\*?[a-zA-Z]'
+    message: "禁止使用 var 声明空切片（如 var list []Type 或 var list []*Type），应使用 make([]Type, 0) 或 make([]Type, 0, cap) 初始化。原因：var 声明的切片值为 nil，make 初始化的切片为非 nil 空切片——两者在 json.Marshal 时行为不同（nil 序列化为 null，空切片序列化为 []），容易引发 API 响应不一致问题。与 QUAL-011（禁用 []Type{} 字面量）互补，共同确保所有切片初始化统一使用 make。豁免场景：① 用于 json.Unmarshal/db.Scan/proto.Unmarshal 的接收变量；② 函数语义上需要区分 nil 与空（Optional 语义）。"
+    examples:
+      bad: "var specList []*ali_ecs.DescribeInstanceTypesResponseBodyInstanceTypesInstanceType"
+      good: "specList := make([]*ali_ecs.DescribeInstanceTypesResponseBodyInstanceTypesInstanceType, 0)"
 
   # 规则说明: 获取列表的接口方法应以 GetList/Search 命名，Get 语义上表示单条记录，GetList/Search 表示多条
   # NOTE: 此规则误报率中等，正则匹配返回切片的 Get 前缀方法，agent 需确认方法是否确实返回列表

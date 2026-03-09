@@ -41,10 +41,12 @@ color: green
 | QUAL-004 | init() 函数 | 确认 init() 内容——复杂初始化逻辑才是问题，简单注册可接受 |
 | QUAL-005 | switch 无 default（需上下文） | 确认是否是穷举式 switch（所有 case 已覆盖则不需要 default） |
 | QUAL-006 | TODO 无 owner | 确认 TODO 是否有 assignee 和预期完成时间 |
-| QUAL-007 | make 无容量（需上下文） | 确认 slice/map 是否有可预估的容量 |
+| QUAL-007 | make() 未指定容量（需上下文） | 确认 slice/map 是否有可预估的容量 |
 | QUAL-008 | public func 无注释（需上下文） | 确认是否是 exported 函数，名称是否已自解释 |
 | QUAL-009 | 枚举常量无注释 | 确认枚举值语义是否已通过名称自解释 |
 | QUAL-010 | 包名不匹配（需人工判断） | 确认目录名与 package 声明是否一致，是否有合理例外 |
+| QUAL-011 | 切片/map 使用 `{}` 字面量初始化 | 排除含字面量元素的初始化（如 `[]string{"a","b"}`）；确认是否可预估容量以指定 make 第三参数 |
+| QUAL-018 | `var` 声明空切片（nil 语义风险） | 确认是否为 unmarshal/scan 接收变量，或是否需要 nil 语义；否则应改为 make |
 
 确认步骤：
 - 确认命中是否为真阳性（排除误报）
@@ -291,7 +293,35 @@ func GetUserOrders(ctx context.Context, userID int64) ([]*Order, error) {
 - HTTP 状态码直接写（如 `200`、`404`）是否应该用 `http.StatusOK`、`http.StatusNotFound`
 - 超时时间、限制数量、重试次数等是否都有命名常量
 
-### 7. 命名信息冗余
+### 7. 方法与独立函数穿插
+
+同一类型的方法（receiver methods）必须连续声明在一起，独立函数（standalone functions）不能插入到方法声明之间。
+
+```go
+// 反例：独立函数 buildFilter 穿插在 User 的两个方法中间
+func (u *UserService) Create(ctx context.Context, req *CreateRequest) (*User, error) { ... }
+
+func buildFilter(status int) map[string]interface{} { ... } // ← 穿插！破坏方法组连贯性
+
+func (u *UserService) GetByID(ctx context.Context, id int64) (*User, error) { ... }
+
+// 正例：方法组连续声明，独立函数移至方法组之后
+func (u *UserService) Create(ctx context.Context, req *CreateRequest) (*User, error) { ... }
+func (u *UserService) GetByID(ctx context.Context, id int64) (*User, error) { ... }
+
+func buildFilter(status int) map[string]interface{} { ... } // 独立函数放在方法组之后
+```
+
+**检查点**：
+- 同一 receiver 类型的所有方法是否连续分组（扫描每个文件的顶层函数声明顺序）
+- 方法声明之间是否夹杂了非该类型的独立函数或其他类型的方法
+- 如果不同类型的方法交替出现，建议按类型拆分为独立文件（如 `user_service.go`、`order_service.go`）
+
+**输出要求**：
+- 指出哪个独立函数插入在哪两个方法之间
+- 给出建议移动的目标位置
+
+### 8. 命名信息冗余
 
 各层级的命名上下文不应重复出现——包名、文件名、类型名已经提供了上下文，成员名中不应再包含这些信息。
 
