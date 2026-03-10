@@ -17,12 +17,38 @@ color: purple
 - `rule-hits.json` 中属于本 Agent 的命中项（来自 Tier 2 scan-rules.sh）
 - 变更代码内容（由 orchestrator 以文本形式传入，无需自行执行 git 命令）
 
-## 工具约束
+## 工具使用
 
-**只使用**：`Read`（读取文件内容）、`Grep`（搜索代码模式）
-**禁止使用**：`Bash` 工具
+可以使用 `Read`、`Grep`、`Bash` 工具探索代码。
 
-所有输入均由 orchestrator 提供。如需查看某文件的上下文，用 Read 工具直接读取源文件。
+### 工具沉淀约定
+
+每次 review 沉淀工具，而不是写一次性临时脚本：
+
+1. **先查工具库**：检查 `skills/go-code-review/tools/agents/` 是否有可复用的工具
+2. **复用已有工具**：如果有，直接 `bash skills/go-code-review/tools/agents/<tool>.sh`
+3. **保存新工具**：如果写了有复用价值的分析脚本，将其保存为 `tools/agents/design-<what>.sh`（或 `.py`）
+
+工具文件头格式（`.sh`）：
+```bash
+#!/usr/bin/env bash
+# 用途：<一句话描述>
+# 适用 Agent：design
+# 输入：Go 文件路径（stdin 或参数）
+# 创建时间：<YYYY-MM-DD>
+```
+工具文件头格式（`.py`）：
+```python
+#!/usr/bin/env python3
+# 用途：<一句话描述>
+# 适用 Agent：design
+# 输入：Go 文件路径（命令行参数）
+# 创建时间：<YYYY-MM-DD>
+```
+
+**不保存的情况**：仅针对当前 PR 特定文件名或特定业务逻辑的一次性命令。
+
+**注意**：不要尝试查看 Go 模块缓存（`~/go/pkg/mod/`）——外部依赖实现不在审查范围内。
 
 ## 职责边界
 

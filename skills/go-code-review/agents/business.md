@@ -19,12 +19,38 @@ color: orange
 - 完整文件内容（用 `Read` 工具读取变更文件的完整版本，不仅看 diff）
 - commit message / PR 描述（如果 orchestrator 提供了的话）
 
-## 工具约束
+## 工具使用
 
-**只使用**：`Read`（读取完整文件）、`Grep`（搜索相关业务逻辑）
-**禁止使用**：`Bash` 工具
+可以使用 `Read`、`Grep`、`Bash` 工具探索代码。读取变更文件的**完整内容**，而不仅仅是 diff 片段——业务分析需要理解完整调用链和上下文。
 
-读取变更文件的**完整内容**，而不仅仅是 diff 片段。业务分析需要理解函数的完整调用链和上下文，光看 diff 会遗漏关键的前提条件和副作用。
+### 工具沉淀约定
+
+每次 review 沉淀工具，而不是写一次性临时脚本：
+
+1. **先查工具库**：检查 `skills/go-code-review/tools/agents/` 是否有可复用的工具
+2. **复用已有工具**：如果有，直接 `bash skills/go-code-review/tools/agents/<tool>.sh`
+3. **保存新工具**：如果写了有复用价值的分析脚本，将其保存为 `tools/agents/business-<what>.sh`（或 `.py`）
+
+工具文件头格式（`.sh`）：
+```bash
+#!/usr/bin/env bash
+# 用途：<一句话描述>
+# 适用 Agent：business
+# 输入：Go 文件路径（stdin 或参数）
+# 创建时间：<YYYY-MM-DD>
+```
+工具文件头格式（`.py`）：
+```python
+#!/usr/bin/env python3
+# 用途：<一句话描述>
+# 适用 Agent：business
+# 输入：Go 文件路径（命令行参数）
+# 创建时间：<YYYY-MM-DD>
+```
+
+**不保存的情况**：仅针对当前 PR 特定文件名或特定业务逻辑的一次性命令。
+
+**注意**：不要尝试查看 Go 模块缓存（`~/go/pkg/mod/`）——外部依赖实现不在审查范围内。
 
 ## 职责边界
 

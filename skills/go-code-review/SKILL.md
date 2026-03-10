@@ -2,6 +2,19 @@
 name: go-code-review
 description: 'This skill should be used when the user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, error handling patterns, concurrency safety, design philosophy, or UNIX principles. Orchestrates comprehensive Go code reviews using a three-tier architecture: quantitative tools + YAML pattern scanning + 5 domain-expert AI agents.'
 version: 5.0.0
+allowed-tools:
+  - Bash(git:*)
+  - Bash(bash:*)
+  - Bash(go:*)
+  - Bash(grep:*)
+  - Bash(find:*)
+  - Bash(ls:*)
+  - Bash(head:*)
+  - Bash(cat:*)
+  - Bash(awk:*)
+  - Bash(sed:*)
+  - Bash(wc:*)
+  - Bash(python3:*)
 ---
 
 # Go Code Review Skill (v4.0.0)
@@ -144,9 +157,19 @@ git diff master --name-only --diff-filter=AM | grep '\.go$' | bash tools/scan-ru
 
 字段说明：`file`（文件路径）、`line`（行号）、`matched`（匹配的源码行）、`summary.total`（总命中数）。
 
+### Step 3.5: 列出 Agent 工具库
+
+在启动 agents 前，列出已沉淀的可复用工具，并将工具列表传给各 agent：
+
+```bash
+ls skills/go-code-review/tools/agents/*.sh skills/go-code-review/tools/agents/*.py 2>/dev/null || echo "（工具库为空）"
+```
+
+将输出传给所有 agents，提示他们优先复用已有工具。
+
 ### Step 4: 读取代码内容，启动 Agent
 
-**先用 Bash 读取变更代码**，再将内容以文本形式传给 agents。**Agents 自身只使用 Read/Grep，不执行 Bash 命令**。
+**先用 Bash 读取变更代码**，再将内容以文本形式传给 agents。
 
 ```bash
 # 读取变更内容（供 agent 分析）
