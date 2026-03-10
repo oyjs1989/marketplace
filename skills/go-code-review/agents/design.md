@@ -13,7 +13,7 @@ color: purple
 
 ## 输入
 
-- `metrics.json`（来自 Tier 1 analyze-go.sh）
+- `diagnostics.json`（来自 Tier 1 run-go-tools.sh）**——本 Agent 必须读取此文件以获取 `large_files` 量化数据**
 - `rule-hits.json` 中属于本 Agent 的命中项（来自 Tier 2 scan-rules.sh）
 - 变更代码内容（由 orchestrator 以文本形式传入，无需自行执行 git 命令）
 
@@ -89,7 +89,8 @@ func CreateUser(ctx context.Context, req *CreateUserRequest) (*User, error) {
 ```
 
 **检查点**：
-- 结合 `metrics.json` 中 `over_80_lines` 标记，分析函数过长的原因
+- 结合 `diagnostics.json` 中 `cognitive_complexity` 数据，认知复杂度高的函数是 KISS 违反的量化信号，需分析根因
+- 结合 `diagnostics.json` 中 `large_files` 数据，分析超大文件是否存在多职责混合
 - 函数是否混合了校验、业务逻辑、数据访问、通知等多个关注点
 - 函数名称是否准确描述了它做的所有事情（如果名字需要 "and"，说明做了多件事）
 

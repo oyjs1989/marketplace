@@ -55,13 +55,15 @@ This skill activates when users need help with:
 
 ### Tier 1 — 量化分析工具
 
-Script: `tools/analyze-go.sh`
-Output: `/tmp/metrics.json`
+Script: `tools/run-go-tools.sh`
+Output: `/tmp/diagnostics.json`
 
-Measures per file and per function:
-- File line count (threshold: 800 lines)
-- Function line count (threshold: 80 lines)
-- Nesting depth (threshold: 4 levels)
+Runs per changed Go file:
+- `go build`（编译错误检测）
+- `go vet`（类型/格式问题）
+- `staticcheck`（SSA 静态分析，可选）
+- `gocognit`（认知复杂度，可选；>15 报告，>25 → P1，16-25 → P2）
+- 文件行数检测（threshold: 800 lines → `large_files`）
 
 ### Tier 2 — YAML 规则扫描
 
@@ -110,9 +112,10 @@ git diff master --name-only --diff-filter=AM | grep '\.go$' | bash tools/run-go-
 - `staticcheck_issues`：SSA 分析结果（SA*→P0，S1*/ST1*→P2，来自 `staticcheck`，未安装则为空）
 - `large_files`：行数 > 800 的文件（参考数据）
 
-如未安装 staticcheck，可提前安装：
+如未安装 staticcheck 或 gocognit，可提前安装（可选，未安装时工具会跳过对应检查）：
 ```bash
 go install honnef.co/go/tools/cmd/staticcheck@latest
+go install github.com/uudashr/gocognit/cmd/gocognit@latest
 ```
 
 ### Step 3: 运行 Tier 2 规则扫描

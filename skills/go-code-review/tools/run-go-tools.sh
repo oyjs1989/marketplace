@@ -21,7 +21,7 @@ while IFS= read -r line; do
 done
 
 # Empty output structure
-EMPTY_JSON='{"build_errors":[],"vet_issues":[],"staticcheck_issues":[],"large_files":[],"summary":{"build_errors":0,"vet_issues":0,"staticcheck_issues":0}}'
+EMPTY_JSON='{"build_errors":[],"vet_issues":[],"staticcheck_issues":[],"cognitive_complexity":[],"large_files":[],"summary":{"build_errors":0,"vet_issues":0,"staticcheck_issues":0,"cognitive_complexity":0}}'
 
 if [[ ${#GO_FILES[@]} -eq 0 ]]; then
     printf '%s\n' "$EMPTY_JSON"
@@ -98,6 +98,7 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 BUILD_OUT="$TMP_DIR/build.txt"
 VET_OUT="$TMP_DIR/vet.txt"
 SC_OUT="$TMP_DIR/staticcheck.txt"
+COGNIT_OUT="$TMP_DIR/gocognit.txt"
 
 # ---------------------------------------------------------------------------
 # Tier 1 – go build
@@ -116,6 +117,16 @@ go vet "${PACKAGES[@]}" 2>"$VET_OUT" || true
 touch "$SC_OUT"
 if command -v staticcheck &>/dev/null; then
     staticcheck "${PACKAGES[@]}" > "$SC_OUT" 2>&1 || true
+fi
+
+# ---------------------------------------------------------------------------
+# Tier 4 – gocognit (optional) - Cognitive complexity
+# Threshold: >15 reported; score >25 → P1, 16-25 → P2
+# Install: go install github.com/uudashr/gocognit/cmd/gocognit@latest
+# ---------------------------------------------------------------------------
+touch "$COGNIT_OUT"
+if command -v gocognit &>/dev/null; then
+    gocognit -over 15 "${VALID_FILES[@]}" > "$COGNIT_OUT" 2>&1 || true
 fi
 
 # ---------------------------------------------------------------------------
@@ -169,10 +180,12 @@ staticcheck_severity() {
 BUILD_COUNT=0
 VET_COUNT=0
 SC_COUNT=0
+COGNIT_COUNT=0
 TMP_BUILD_JSON="$TMP_DIR/build_entries.txt"
 TMP_VET_JSON="$TMP_DIR/vet_entries.txt"
 TMP_SC_JSON="$TMP_DIR/sc_entries.txt"
-touch "$TMP_BUILD_JSON" "$TMP_VET_JSON" "$TMP_SC_JSON"
+TMP_COGNIT_JSON="$TMP_DIR/cognit_entries.txt"
+touch "$TMP_BUILD_JSON" "$TMP_VET_JSON" "$TMP_SC_JSON" "$TMP_COGNIT_JSON"
 
 # --- parse build errors ---
 while IFS= read -r raw_line; do
@@ -260,6 +273,35 @@ while IFS= read -r raw_line; do
     SC_COUNT=$((SC_COUNT + 1))
 done < "$SC_OUT"
 
+# --- parse gocognit output ---
+# gocognit output format: FunctionName (score) path/to/file.go:line:col
+while IFS= read -r raw_line; do
+    [[ -z "$raw_line" ]] && continue
+    if [[ "$raw_line" =~ ^([^[:space:]]+)[[:space:]]+\(([0-9]+)\)[[:space:]]+([^:]+\.go):([0-9]+):[0-9]+$ ]]; then
+        c_func="${BASH_REMATCH[1]}"
+        c_score="${BASH_REMATCH[2]}"
+        c_file="${BASH_REMATCH[3]}"
+        c_line="${BASH_REMATCH[4]}"
+    else
+        continue
+    fi
+    if [[ "$c_score" -gt 25 ]]; then
+        c_sev="P1"
+    else
+        c_sev="P2"
+    fi
+    ESC_FUNC=$(json_escape "$c_func")
+    ESC_FILE=$(json_escape "$c_file")
+    if [[ $COGNIT_COUNT -gt 0 ]]; then
+        printf ',{"function":"%s","score":%s,"file":"%s","line":%s,"severity":"%s"}' \
+            "$ESC_FUNC" "$c_score" "$ESC_FILE" "$c_line" "$c_sev" >> "$TMP_COGNIT_JSON"
+    else
+        printf '{"function":"%s","score":%s,"file":"%s","line":%s,"severity":"%s"}' \
+            "$ESC_FUNC" "$c_score" "$ESC_FILE" "$c_line" "$c_sev" >> "$TMP_COGNIT_JSON"
+    fi
+    COGNIT_COUNT=$((COGNIT_COUNT + 1))
+done < "$COGNIT_OUT"
+
 # ---------------------------------------------------------------------------
 # Assemble large_files JSON array
 # ---------------------------------------------------------------------------
@@ -283,12 +325,15 @@ fi
 BUILD_CONTENT=$(cat "$TMP_BUILD_JSON")
 VET_CONTENT=$(cat "$TMP_VET_JSON")
 SC_CONTENT=$(cat "$TMP_SC_JSON")
+COGNIT_CONTENT=$(cat "$TMP_COGNIT_JSON")
 
-printf '{"build_errors":[%s],"vet_issues":[%s],"staticcheck_issues":[%s],"large_files":%s,"summary":{"build_errors":%d,"vet_issues":%d,"staticcheck_issues":%d}}\n' \
+printf '{"build_errors":[%s],"vet_issues":[%s],"staticcheck_issues":[%s],"cognitive_complexity":[%s],"large_files":%s,"summary":{"build_errors":%d,"vet_issues":%d,"staticcheck_issues":%d,"cognitive_complexity":%d}}\n' \
     "$BUILD_CONTENT" \
     "$VET_CONTENT" \
     "$SC_CONTENT" \
+    "$COGNIT_CONTENT" \
     "$LARGE_FILES_JSON" \
     "$BUILD_COUNT" \
     "$VET_COUNT" \
-    "$SC_COUNT"
+    "$SC_COUNT" \
+    "$COGNIT_COUNT"
