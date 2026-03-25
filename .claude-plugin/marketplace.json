@@ -4,8 +4,8 @@
     {
       "name": "go-code-review",
       "source": "./skills/go-code-review",
-      "version": "5.0.0",
-      "description": "Go code review: go build/vet/staticcheck + YAML rule scanning + 5 domain-expert AI agents (safety/data/design/quality/observability)",
+      "version": "6.0.0",
+      "description": "Go code review: go build/vet/staticcheck + YAML rule scanning + 6 domain-expert AI agents (safety/data/design/quality/observability/business)",
       "author": {
         "name": "FUTU Development Team",
         "email": "dev@futunn.com"
