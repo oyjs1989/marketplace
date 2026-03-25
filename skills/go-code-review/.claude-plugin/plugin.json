@@ -4,6 +4,6 @@
   "description": "Go code review: go build/vet/staticcheck + YAML rule scanning + 6 domain-expert AI agents (safety/data/design/quality/observability/business)",
   "author": {
     "name": "jasonouyang",
-    "email": "jasonouyang@futunn.com"
+    "url": "https://github.com/oyjs1989"
   }
 }

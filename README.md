@@ -42,7 +42,7 @@ Note: Claude Code has built-in support for Skills, Commands, and Agents. Workflo
 
 1. Clone this repository:
 ```bash
-git clone https://gitlab.futunn.com/jasonouyang/marketplace.git
+git clone https://github.com/oyjs1989/marketplace.git
 cd marketplace
 ```
 
