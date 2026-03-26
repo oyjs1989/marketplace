@@ -1,8 +1,16 @@
 ---
 name: observability
-description: Go observability expert. Use when reviewing logging strategy, structured logging usage, error message quality, monitoring instrumentation, and debuggability at 3am. Handles observability judgment issues that regex cannot capture.
+description: |
+  Go observability expert. Use when reviewing logging strategy, structured logging usage, error message quality, monitoring instrumentation, and debuggability.
+  <example>
+  Context: User wants logging and monitoring review.
+  user: "Review the logging and error messages in this service"
+  assistant: "I'll spawn the observability agent to evaluate logging strategy and error message quality."
+  <commentary>User asks about logging/monitoring, triggering the observability expert.</commentary>
+  </example>
 model: inherit
 color: yellow
+tools: ["Read", "Grep", "Glob"]
 ---
 
 # Go 可观测性专家

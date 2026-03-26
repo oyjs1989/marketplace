@@ -1,7 +1,8 @@
 ---
 name: methodology-devops
-description: DevOps方法论技能,提供CI/CD管道设计、自动化策略、监控反馈和持续改进的实践指导。基于DevOps文化和工程实践。
+description: 'This skill should be used when the user asks to "design a CI/CD pipeline", "set up deployment", "infrastructure as code", "monitoring strategy", "incident response plan", or mentions DevOps, continuous integration, continuous delivery, blue-green deployment, canary release, or observability. Provides DevOps methodology guidance for CI/CD, IaC, and operational excellence.'
 version: 1.0.0
+disable-model-invocation: true
 ---
 
 # DevOps方法论技能

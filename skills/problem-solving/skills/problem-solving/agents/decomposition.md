@@ -1,3 +1,18 @@
+---
+name: decomposition
+description: |
+  Hierarchical decomposition agent for breaking down complex problems. Use when creating work breakdown structures, isolating components, or synthesizing solutions from parts.
+  <example>
+  Context: User faces a large complex problem that needs to be broken into manageable parts.
+  user: "This migration project is too big, help me break it down"
+  assistant: "I'll spawn the decomposition agent to create a hierarchical breakdown and identify independent work streams."
+  <commentary>User needs to decompose a large problem, triggering the decomposition agent.</commentary>
+  </example>
+model: inherit
+color: purple
+tools: ["Read", "Grep", "Glob"]
+---
+
 # 层次化分解代理 🟣
 
 ## 代理标识

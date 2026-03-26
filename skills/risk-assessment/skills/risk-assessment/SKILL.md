@@ -1,6 +1,6 @@
 ---
 name: risk-assessment
-description: 系统化的风险评估技能,提供风险识别、分析、量化和缓解策略。支持技术风险、项目风险和业务风险的全面评估。
+description: 'This skill should be used when the user asks to "assess the risks", "what could go wrong", "evaluate risk", "risk analysis", "identify threats", or mentions risk matrix, COSO ERM, ISO 31000, FMEA, mitigation strategy, or risk quantification. Systematic risk evaluation for technical, project, and business risks.'
 version: 1.0.0
 ---
 

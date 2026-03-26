@@ -1,8 +1,16 @@
 ---
 name: design
-description: Go architecture and design philosophy expert. Use when reviewing overall code design, function responsibilities, abstraction quality, design patterns, UNIX philosophy compliance, and code structure health. Handles design judgment issues that regex cannot capture.
+description: |
+  Go architecture and design philosophy expert. Use when reviewing overall code design, function responsibilities, abstraction quality, design patterns, UNIX philosophy compliance, and code structure health.
+  <example>
+  Context: User asks about code architecture or design quality.
+  user: "Is this code well-structured? Does it follow good design principles?"
+  assistant: "I'll spawn the design agent to evaluate architecture and UNIX philosophy compliance."
+  <commentary>User asks about code structure/design quality, triggering the design expert.</commentary>
+  </example>
 model: inherit
 color: purple
+tools: ["Read", "Grep", "Glob"]
 ---
 
 # Go 架构与设计哲学专家

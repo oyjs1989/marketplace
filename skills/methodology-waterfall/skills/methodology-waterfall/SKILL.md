@@ -1,7 +1,8 @@
 ---
 name: methodology-waterfall
-description: 瀑布方法论技能,提供阶段门控规划、需求文档、详细设计和顺序执行的实践指导。基于传统软件工程方法论。
+description: 'This skill should be used when the user asks to "write a requirements spec", "create an SRS", "system design document", "stage-gate planning", "waterfall project plan", or mentions SRS, SDD, formal verification, sequential development, or traditional SDLC. Provides Waterfall methodology guidance with stage-gate planning and document templates.'
 version: 1.0.0
+disable-model-invocation: true
 ---
 
 # 瀑布方法论技能

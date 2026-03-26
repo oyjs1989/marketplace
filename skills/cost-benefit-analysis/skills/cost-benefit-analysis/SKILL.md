@@ -1,6 +1,6 @@
 ---
 name: cost-benefit-analysis
-description: 系统化的成本效益分析技能,提供成本识别、效益量化、ROI计算和情景分析。支持技术决策的经济可行性评估。
+description: 'This skill should be used when the user asks to "is it worth it", "calculate ROI", "cost-benefit analysis", "total cost of ownership", "build vs buy", or mentions NPV, IRR, payback period, TCO, or economic feasibility. Provides systematic cost-benefit analysis with ROI/NPV/IRR/TCO calculations and scenario analysis.'
 version: 1.0.0
 ---
 

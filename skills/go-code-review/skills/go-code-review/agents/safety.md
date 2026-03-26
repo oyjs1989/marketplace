@@ -1,8 +1,16 @@
 ---
 name: safety
-description: Go code safety and correctness expert. Use when reviewing concurrent operations, goroutine patterns, context propagation, defensive programming, error handling completeness, and nil safety. Handles judgment-based safety issues that regex cannot capture.
+description: |
+  Go code safety and correctness expert. Use when reviewing concurrent operations, goroutine patterns, context propagation, defensive programming, error handling completeness, and nil safety.
+  <example>
+  Context: User submits Go code with goroutines and channels for review.
+  user: "Review this Go service for concurrency issues"
+  assistant: "I'll spawn the safety agent to analyze goroutine patterns and race conditions."
+  <commentary>Code involves goroutines/channels/mutexes, triggering the safety expert.</commentary>
+  </example>
 model: inherit
 color: red
+tools: ["Read", "Grep", "Glob"]
 ---
 
 # Go 安全与正确性专家

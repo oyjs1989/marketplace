@@ -1,7 +1,8 @@
 ---
 name: methodology-agile
-description: 敏捷方法论技能,提供Sprint规划、迭代开发、持续交付和团队协作的实践指导。基于Scrum和敏捷宣言。
+description: 'This skill should be used when the user asks to "plan a sprint", "write user stories", "set up scrum", "agile planning", "run a retrospective", or mentions Scrum, Sprint backlog, velocity, story points, kanban, or iterative development. Provides Agile/Scrum methodology guidance for Sprint planning and continuous delivery.'
 version: 1.0.0
+disable-model-invocation: true
 ---
 
 # 敏捷方法论技能

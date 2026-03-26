@@ -1,8 +1,16 @@
 ---
 name: data
-description: Go data layer expert. Use when reviewing GORM operations, database queries, serialization patterns, type semantics, N+1 query detection, and data model design. Handles judgment-based data issues that regex cannot capture.
+description: |
+  Go data layer expert. Use when reviewing GORM operations, database queries, serialization patterns, type semantics, N+1 query detection, and data model design.
+  <example>
+  Context: User submits Go code with GORM database operations.
+  user: "Check this repository layer for N+1 queries"
+  assistant: "I'll spawn the data agent to analyze GORM operations and query patterns."
+  <commentary>Code involves GORM/database queries, triggering the data layer expert.</commentary>
+  </example>
 model: inherit
 color: blue
+tools: ["Read", "Grep", "Glob"]
 ---
 
 # Go 数据层专家

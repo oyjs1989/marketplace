@@ -1,6 +1,6 @@
 ---
 name: decision-support
-description: 决策支持集成技能,提供多准则决策分析、方案比较和综合推荐。整合风险评估和成本效益分析,支持复杂决策场景。
+description: 'This skill should be used when the user asks to "help me choose between", "compare options", "which one should I pick", "evaluate alternatives", "make a decision", or mentions decision matrix, AHP, TOPSIS, weighted scoring, or multi-criteria analysis. Provides multi-criteria decision analysis with integrated risk and cost-benefit evaluation.'
 version: 1.0.0
 ---
 

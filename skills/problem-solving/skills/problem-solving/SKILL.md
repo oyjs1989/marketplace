@@ -1,6 +1,6 @@
 ---
 name: problem-solving
-description: 综合性问题解决编排器,应用系统化思维方法和模式识别处理软件开发和IT系统挑战。根据问题上下文自动选择适用的认知策略。
+description: 'This skill should be used when the user asks to "analyze this problem", "help me think through this", "break down this issue", "find the root cause", or mentions systems thinking, problem decomposition, pattern recognition, or iterative problem solving. Comprehensive problem-solving orchestrator coordinating 5 cognitive agents for multi-perspective analysis.'
 version: 1.0.0
 ---
 
