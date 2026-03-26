@@ -1,15 +1,23 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "jasonouyang-marketplace",
+  "description": "Jason Ouyang's Claude Code marketplace",
+  "owner": {
+    "name": "Jason Ouyang",
+    "url": "https://github.com/oyjs1989"
+  },
   "plugins": [
     {
       "name": "go-code-review",
-      "source": "./skills/go-code-review",
-      "version": "6.0.0",
       "description": "Go code review: go build/vet/staticcheck + YAML rule scanning + 6 domain-expert AI agents (safety/data/design/quality/observability/business)",
+      "version": "6.0.0",
       "author": {
         "name": "jasonouyang",
         "url": "https://github.com/oyjs1989"
-      }
+      },
+      "source": "./skills/go-code-review",
+      "category": "review",
+      "strict": false
     }
   ]
 }
