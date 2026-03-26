@@ -1,30 +1,8 @@
 {
   "name": "methodology-waterfall",
-  "version": "1.0.0",
-  "description": "瀑布方法论技能,提供阶段门控规划、需求文档、详细设计和顺序执行的实践指导。基于传统软件工程方法论。",
-  "author": "Jason Ouyang",
-  "license": "MIT",
-  "keywords": [
-    "waterfall",
-    "stage-gate",
-    "requirements",
-    "system-design",
-    "sequential-development",
-    "documentation-driven",
-    "瀑布模型",
-    "需求分析",
-    "系统设计"
-  ],
-  "framework": "Waterfall",
-  "practices": [
-    "requirements-analysis",
-    "system-design",
-    "implementation",
-    "testing",
-    "deployment",
-    "maintenance",
-    "stage-gate-review",
-    "change-management"
-  ],
-  "language": "zh-CN"
+  "description": "Waterfall methodology with stage-gate planning, SRS/SDD document templates, and sequential execution practices",
+  "author": {
+    "name": "Jason Ouyang",
+    "email": "jasonouyang@futunn.com"
+  }
 }

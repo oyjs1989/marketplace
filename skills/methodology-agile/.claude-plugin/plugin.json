@@ -1,28 +1,8 @@
 {
   "name": "methodology-agile",
-  "version": "1.0.0",
-  "description": "敏捷方法论技能,提供Sprint规划、迭代开发、持续交付和团队协作的实践指导。基于Scrum和敏捷宣言。",
-  "author": "Jason Ouyang",
-  "license": "MIT",
-  "keywords": [
-    "agile",
-    "scrum",
-    "sprint",
-    "iteration",
-    "user-story",
-    "敏捷开发",
-    "迭代",
-    "Scrum"
-  ],
-  "framework": "Scrum",
-  "practices": [
-    "sprint-planning",
-    "daily-standup",
-    "sprint-review",
-    "sprint-retrospective",
-    "continuous-integration",
-    "TDD",
-    "pair-programming"
-  ],
-  "language": "zh-CN"
+  "description": "Agile/Scrum methodology with Sprint planning, iterative development, and continuous delivery practices",
+  "author": {
+    "name": "Jason Ouyang",
+    "email": "jasonouyang@futunn.com"
+  }
 }

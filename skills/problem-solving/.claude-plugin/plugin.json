@@ -1,55 +1,8 @@
 {
   "name": "problem-solving",
-  "version": "1.0.0",
-  "description": "综合性问题解决编排器,应用系统化思维方法和模式识别处理软件开发和IT系统挑战。根据问题上下文自动选择适用的认知策略。",
-  "author": "Jason Ouyang",
-  "license": "MIT",
-  "keywords": [
-    "problem-solving",
-    "systems-thinking",
-    "modeling",
-    "decomposition",
-    "iteration",
-    "pattern-recognition",
-    "问题解决",
-    "系统思维",
-    "架构设计"
-  ],
-  "agents": [
-    {
-      "name": "systems-thinking",
-      "color": "blue",
-      "description": "全局视角、涌现属性、杠杆点识别"
-    },
-    {
-      "name": "modeling-abstraction",
-      "color": "green",
-      "description": "概念模型、抽象层次、模式提取"
-    },
-    {
-      "name": "decomposition",
-      "color": "purple",
-      "description": "层次分解、组件隔离、方案合成"
-    },
-    {
-      "name": "iteration",
-      "color": "orange",
-      "description": "增量改进、反馈循环、渐进增强"
-    },
-    {
-      "name": "pattern-recognition",
-      "color": "cyan",
-      "description": "模式发现/重构/集成/促进/需求确定"
-    }
-  ],
-  "references": [
-    "THINKING_METHODS.md",
-    "PROBLEM_PATTERNS.md"
-  ],
-  "integrations": [
-    "risk-assessment",
-    "cost-benefit-analysis",
-    "decision-support"
-  ],
-  "language": "zh-CN"
+  "description": "Comprehensive problem-solving orchestrator coordinating 5 cognitive agents (systems-thinking/modeling/decomposition/iteration/pattern-recognition)",
+  "author": {
+    "name": "Jason Ouyang",
+    "email": "jasonouyang@futunn.com"
+  }
 }
