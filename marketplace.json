@@ -4,7 +4,8 @@
   "description": "Jason Ouyang's Claude Code marketplace",
   "owner": {
     "name": "Jason Ouyang",
-    "url": "https://github.com/oyjs1989"
+    "url": "https://github.com/oyjs1989",
+    "email": "jasonouyang@futunn.com"
   },
   "plugins": [
     {
