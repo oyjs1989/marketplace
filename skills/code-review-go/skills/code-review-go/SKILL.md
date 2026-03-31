@@ -1,5 +1,5 @@
 ---
-name: go-code-review
+name: code-review-go
 description: 'This skill should be used when the user asks to "review Go code", "check Go code quality", "review this PR", "code review", or mentions Go code standards, GORM best practices, error handling patterns, concurrency safety, design philosophy, naming conventions, or UNIX principles. Orchestrates comprehensive Go code reviews using a three-tier architecture: quantitative tools + YAML pattern scanning + 7 domain-expert AI agents.'
 version: 6.0.0
 allowed-tools:
@@ -164,7 +164,7 @@ git diff master --name-only --diff-filter=AM | grep '\.go$' | bash tools/scan-ru
 在启动 agents 前，列出已沉淀的可复用工具，并将工具列表传给各 agent：
 
 ```bash
-ls skills/go-code-review/tools/agents/*.sh skills/go-code-review/tools/agents/*.py 2>/dev/null || echo "（工具库为空）"
+ls skills/code-review-go/tools/agents/*.sh skills/code-review-go/tools/agents/*.py 2>/dev/null || echo "（工具库为空）"
 ```
 
 将输出传给所有 agents，提示他们优先复用已有工具。

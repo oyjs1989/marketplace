@@ -18,14 +18,14 @@
 ## Task 1: 创建 `tools/run-go-tools.sh`
 
 **Files:**
-- Create: `skills/go-code-review/tools/run-go-tools.sh`
+- Create: `skills/code-review-go/tools/run-go-tools.sh`
 
 **背景：** 替换现有两个工具脚本。接收 Go 文件路径（stdin），提取 package 路径，运行 `go vet` 和可选的 `staticcheck`，输出统一的 `diagnostics.json`。
 
 **Step 1: 创建脚本文件**
 
 ```bash
-cat > skills/go-code-review/tools/run-go-tools.sh << 'EOF'
+cat > skills/code-review-go/tools/run-go-tools.sh << 'EOF'
 #!/usr/bin/env bash
 # run-go-tools.sh - Run Go compiler tools on changed files
 # Usage:
@@ -186,13 +186,13 @@ printf '{"build_errors":%s,"vet_issues":%s,"staticcheck_issues":%s,"large_files"
     "$BUILD_ERRORS_JSON" "$VET_ISSUES_JSON" "$STATICCHECK_JSON" "$LARGE_FILES_JSON" \
     "$BUILD_COUNT" "$VET_COUNT" "$STATICCHECK_COUNT"
 EOF
-chmod +x skills/go-code-review/tools/run-go-tools.sh
+chmod +x skills/code-review-go/tools/run-go-tools.sh
 ```
 
 **Step 2: 验证脚本语法**
 
 ```bash
-bash -n skills/go-code-review/tools/run-go-tools.sh && echo "syntax OK"
+bash -n skills/code-review-go/tools/run-go-tools.sh && echo "syntax OK"
 ```
 Expected: `syntax OK`
 
@@ -207,8 +207,8 @@ Expected: 合法 JSON，`summary` 字段显示各工具命中数
 **Step 4: Commit**
 
 ```bash
-git add skills/go-code-review/tools/run-go-tools.sh
-git commit -m "feat(go-code-review): add run-go-tools.sh using go vet + staticcheck"
+git add skills/code-review-go/tools/run-go-tools.sh
+git commit -m "feat(code-review-go): add run-go-tools.sh using go vet + staticcheck"
 ```
 
 ---
@@ -216,9 +216,9 @@ git commit -m "feat(go-code-review): add run-go-tools.sh using go vet + staticch
 ## Task 2: 修复 YAML 规则最严重的假阳性
 
 **Files:**
-- Modify: `skills/go-code-review/rules/safety.yaml`
-- Modify: `skills/go-code-review/rules/data.yaml`
-- Modify: `skills/go-code-review/rules/observability.yaml`
+- Modify: `skills/code-review-go/rules/safety.yaml`
+- Modify: `skills/code-review-go/rules/data.yaml`
+- Modify: `skills/code-review-go/rules/observability.yaml`
 
 **背景：** 三个最严重的假阳性来源，通过精化 pattern 解决：
 - SAFE-001：`fmt.Errorf("%w", err)` 是合法的 Go 错误包装，不应命中
@@ -271,15 +271,15 @@ OBS-006/007 pattern 命中注释行。更新 message 提醒 Agent：
 **Step 5: 验证 YAML 仍可被 scan-rules.sh 解析**
 
 ```bash
-echo "test/any_file.go" | bash skills/go-code-review/tools/scan-rules.sh skills/go-code-review/rules | python3 -m json.tool | tail -5
+echo "test/any_file.go" | bash skills/code-review-go/tools/scan-rules.sh skills/code-review-go/rules | python3 -m json.tool | tail -5
 ```
 Expected: 合法 JSON，无 parse 错误
 
 **Step 6: Commit**
 
 ```bash
-git add skills/go-code-review/rules/
-git commit -m "fix(go-code-review): reduce false positives in SAFE-001/002, DATA-006, OBS-006/007"
+git add skills/code-review-go/rules/
+git commit -m "fix(code-review-go): reduce false positives in SAFE-001/002, DATA-006, OBS-006/007"
 ```
 
 ---
@@ -287,7 +287,7 @@ git commit -m "fix(go-code-review): reduce false positives in SAFE-001/002, DATA
 ## Task 3: 更新 SKILL.md 工作流
 
 **Files:**
-- Modify: `skills/go-code-review/SKILL.md`
+- Modify: `skills/code-review-go/SKILL.md`
 
 **背景：** SKILL.md 是编排器，需要反映新的工具链。新的 Step 2 运行 `run-go-tools.sh`，Step 3 保留 `scan-rules.sh` 作为补充（但期望命中数大幅减少）。
 
@@ -349,8 +349,8 @@ version: 5.0.0
 **Step 5: Commit**
 
 ```bash
-git add skills/go-code-review/SKILL.md
-git commit -m "feat(go-code-review): update orchestrator to use run-go-tools.sh (v5.0.0)"
+git add skills/code-review-go/SKILL.md
+git commit -m "feat(code-review-go): update orchestrator to use run-go-tools.sh (v5.0.0)"
 ```
 
 ---
@@ -358,7 +358,7 @@ git commit -m "feat(go-code-review): update orchestrator to use run-go-tools.sh 
 ## Task 4: 更新 safety agent 使用新工具输出
 
 **Files:**
-- Modify: `skills/go-code-review/agents/safety.md`
+- Modify: `skills/code-review-go/agents/safety.md`
 
 **背景：** safety agent 目前被要求"确认 Tier 2 命中"，现在改为"优先读取 diagnostics.json，再补充判断性分析"。
 
@@ -392,8 +392,8 @@ git commit -m "feat(go-code-review): update orchestrator to use run-go-tools.sh 
 **Step 3: Commit**
 
 ```bash
-git add skills/go-code-review/agents/safety.md
-git commit -m "fix(go-code-review): update safety agent to use diagnostics.json, add false-positive filters"
+git add skills/code-review-go/agents/safety.md
+git commit -m "fix(code-review-go): update safety agent to use diagnostics.json, add false-positive filters"
 ```
 
 ---
@@ -401,7 +401,7 @@ git commit -m "fix(go-code-review): update safety agent to use diagnostics.json,
 ## Task 5: 更新 quality agent 使用新工具输出
 
 **Files:**
-- Modify: `skills/go-code-review/agents/quality.md`
+- Modify: `skills/code-review-go/agents/quality.md`
 
 **背景：** quality agent 目前使用 metrics.json（来自 analyze-go.sh），需要改为使用 diagnostics.json。
 
@@ -430,8 +430,8 @@ git commit -m "fix(go-code-review): update safety agent to use diagnostics.json,
 **Step 3: Commit**
 
 ```bash
-git add skills/go-code-review/agents/quality.md
-git commit -m "fix(go-code-review): update quality agent to use diagnostics.json, soften function-length rule"
+git add skills/code-review-go/agents/quality.md
+git commit -m "fix(code-review-go): update quality agent to use diagnostics.json, soften function-length rule"
 ```
 
 ---
@@ -439,15 +439,15 @@ git commit -m "fix(go-code-review): update quality agent to use diagnostics.json
 ## Task 6: 更新版本文件
 
 **Files:**
-- Modify: `skills/go-code-review/.claude-plugin/plugin.json`
+- Modify: `skills/code-review-go/.claude-plugin/plugin.json`
 - Modify: `.claude-plugin/marketplace.json`
-- 同步更新 `~/.claude/plugins/cache/jasonouyang-marketplace/go-code-review/4.0.0/` 缓存（或重装插件）
+- 同步更新 `~/.claude/plugins/cache/jasonouyang-marketplace/code-review-go/4.0.0/` 缓存（或重装插件）
 
 **Step 1: 更新 plugin.json**
 
 ```json
 {
-  "name": "go-code-review",
+  "name": "code-review-go",
   "version": "5.0.0",
   "description": "Go code review with three-tier architecture: go build/vet/staticcheck + rule scanning + 5 domain-expert AI agents",
   "author": {
@@ -464,8 +464,8 @@ git commit -m "fix(go-code-review): update quality agent to use diagnostics.json
   "name": "jasonouyang-marketplace",
   "plugins": [
     {
-      "name": "go-code-review",
-      "source": "./skills/go-code-review",
+      "name": "code-review-go",
+      "source": "./skills/code-review-go",
       "version": "5.0.0",
       "description": "Go code review: go build/vet/staticcheck + YAML rule scanning + 5 domain-expert AI agents",
       "author": {
@@ -480,12 +480,12 @@ git commit -m "fix(go-code-review): update quality agent to use diagnostics.json
 **Step 3: Final commit + 同步缓存**
 
 ```bash
-git add skills/go-code-review/.claude-plugin/plugin.json .claude-plugin/marketplace.json
-git commit -m "chore(go-code-review): bump version to 5.0.0"
+git add skills/code-review-go/.claude-plugin/plugin.json .claude-plugin/marketplace.json
+git commit -m "chore(code-review-go): bump version to 5.0.0"
 
 # 同步到插件缓存（重新安装会更干净）
-claude plugin uninstall go-code-review@jasonouyang-marketplace
-claude plugin install go-code-review@jasonouyang-marketplace
+claude plugin uninstall code-review-go@jasonouyang-marketplace
+claude plugin install code-review-go@jasonouyang-marketplace
 ```
 
 ---

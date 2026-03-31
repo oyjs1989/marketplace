@@ -1,22 +1,12 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "jasonouyang-marketplace",
-  "description": "Jason Ouyang's Claude Code marketplace - Go code review, problem-solving frameworks, decision analysis, and methodology skills",
+  "description": "Jason Ouyang's Claude Code marketplace - problem-solving frameworks, decision analysis, and methodology skills",
   "owner": {
     "name": "Jason Ouyang",
     "email": "jasonouyang@futunn.com"
   },
   "plugins": [
-    {
-      "name": "go-code-review",
-      "description": "Go code review: go build/vet/staticcheck + YAML rule scanning + 6 domain-expert AI agents (safety/data/design/quality/observability/business)",
-      "author": {
-        "name": "Jason Ouyang",
-        "email": "jasonouyang@futunn.com"
-      },
-      "source": "./skills/go-code-review",
-      "category": "development"
-    },
     {
       "name": "problem-solving",
       "description": "Comprehensive problem-solving orchestrator coordinating 5 cognitive agents (systems-thinking/modeling/decomposition/iteration/pattern-recognition)",

@@ -56,8 +56,8 @@ tools: ["Read", "Grep", "Glob"]
 
 每次 review 沉淀工具，而不是写一次性临时脚本：
 
-1. **先查工具库**：检查 `skills/go-code-review/tools/agents/` 是否有可复用的工具
-2. **复用已有工具**：如果有，直接 `bash skills/go-code-review/tools/agents/<tool>.sh`
+1. **先查工具库**：检查 `skills/code-review-go/tools/agents/` 是否有可复用的工具
+2. **复用已有工具**：如果有，直接 `bash skills/code-review-go/tools/agents/<tool>.sh`
 3. **保存新工具**：如果写了有复用价值的分析脚本，将其保存为 `tools/agents/business-<what>.sh`（或 `.py`）
 
 工具文件头格式（`.sh`）：

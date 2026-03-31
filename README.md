@@ -11,7 +11,6 @@ This repository provides a marketplace of pre-built components that extend Claud
 ```
 marketplace/
 ├── skills/          # Individual reusable skills
-│   ├── go-code-review/        # Go code review skill (v4.0.0)
 │   ├── problem-solving/       # Problem-solving orchestrator (v1.0.0)
 │   ├── decision-support/      # Multi-criteria decision analysis (v1.0.0)
 │   ├── risk-assessment/       # Risk evaluation (v1.0.0)
@@ -62,50 +61,6 @@ Each component type has its own usage pattern:
 ## Available Components
 
 ### Skills
-
-#### Go Code Review Plugin (v4.0.0)
-
-Three-Tier Expert Architecture for Go code review, enforcing FUTU's 142+ coding standards with quantitative metrics, YAML rule scanning, and domain-expert AI agents.
-
-> **Breaking Change from v3.0.0**: The old 4 specialist agents (gorm-review, error-safety, naming-logging, organization) are replaced by a new three-tier architecture with 5 domain-expert agents and automated tooling.
-
-**Quick Start**:
-```
-Review my Go code
-```
-
-**One command triggers everything** - the plugin automatically:
-- Runs quantitative analysis (Tier 1: metrics.json)
-- Scans YAML rules for pattern violations (Tier 2: rule-hits.json)
-- Dispatches 5 domain-expert agents in parallel (Tier 3)
-- Delivers comprehensive findings in Chinese
-
-**Three-Tier Expert Architecture**:
-- **Tier 1 - Quantitative Analysis**: `analyze-go.sh` produces `metrics.json` (file size, function length, nesting depth)
-- **Tier 2 - Rule Scanning**: `scan-rules.sh` reads 38 YAML rules (SAFE/DATA/QUAL/OBS) and produces `rule-hits.json`
-- **Tier 3 - 5 Domain-Expert Agents**:
-  - **safety** - Concurrency, nil safety, context propagation (SAFE-001~010)
-  - **data** - N+1 queries, GORM operations, type semantics (DATA-001~010)
-  - **design** - UNIX 7 principles, code rot causes, architecture
-  - **quality** - Naming, metrics violations, code organization (QUAL-001~010)
-  - **observability** - Logging strategy, error message quality (OBS-001~008)
-
-**Features**:
-- **Automated Tooling**: Tier 1 + Tier 2 run before AI agents to provide quantitative context
-- **YAML Rule Source of Truth**: 38 structured rules replace inline rule documentation
-- **Single Invocation**: One call reviews with all 142+ rules
-- **Parallel Execution**: All 5 agents run simultaneously for maximum speed
-- **Chinese Output**: All findings reported in Chinese (FUTU requirement)
-- **Priority Classification**: P0 (must fix), P1 (recommended), P2 (suggested)
-- **Structured Rule IDs**: SAFE-/DATA-/QUAL-/OBS- prefix naming for traceability
-
-**Documentation**:
-- Main: [skills/go-code-review/README.md](skills/go-code-review/README.md)
-- Details: [skills/go-code-review/SKILL.md](skills/go-code-review/SKILL.md)
-
-**Test**: Run `Review test-cases/go-code-review/bad/user_service_bad.go` to see it in action.
-
----
 
 #### Problem-Solving Framework (v1.0.0)
 
@@ -232,20 +187,8 @@ MIT License - feel free to use, modify, and distribute these components.
 
 Active development. New skills, commands, agents, and workflows are being added regularly.
 
-## Testing
-
-Test cases are available in the `test-cases/` directory to validate skill functionality:
-
-- **Go Code Review Tests**: `test-cases/go-code-review/`
-  - Comprehensive test files covering P0/P1/P2 violations
-  - Good vs bad code examples
-  - Detailed test documentation and quick start guide
-  - See [test-cases/go-code-review/README.md](test-cases/go-code-review/README.md)
-
 ## Roadmap
 
-- [x] Add initial set of common skills (Go Code Review v4.0.0)
-- [x] Create testing framework (Go Code Review test cases)
 - [x] Problem-solving framework (v1.0.0) - 7 skills with cognitive agents
 - [ ] Integration tests for problem-solving framework
 - [ ] Create useful slash commands

@@ -1,5 +1,5 @@
 {
-  "name": "go-code-review",
+  "name": "code-review-go",
   "description": "Go code review: go build/vet/staticcheck + YAML rule scanning + 6 domain-expert AI agents (safety/data/design/quality/observability/business)",
   "author": {
     "name": "Jason Ouyang",

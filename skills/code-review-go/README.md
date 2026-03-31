@@ -36,7 +36,7 @@ This plugin includes 4 independent review agents:
 ## Architecture
 
 ```
-go-code-review/
+code-review-go/
 ├── .claude-plugin/
 │   └── plugin.json              # Plugin metadata
 ├── SKILL.md                     # Main orchestrator
@@ -116,12 +116,12 @@ db.Find(&users)
 
 Test with bad code examples:
 ```
-Review test-cases/go-code-review/bad/user_service_bad.go
+Review test-cases/code-review-go/bad/user_service_bad.go
 ```
 
 Run automated validation:
 ```bash
-cd test-cases/go-code-review
+cd test-cases/code-review-go
 ./run_test.sh
 ./validate_results.sh
 ```

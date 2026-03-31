@@ -7,17 +7,17 @@
 每个 agent 在执行分析前，应先查看本目录是否已有合适的工具：
 
 ```bash
-ls skills/go-code-review/tools/agents/
+ls skills/code-review-go/tools/agents/
 ```
 
 如果已有合适的工具，直接调用：
 
 ```bash
 # Shell 脚本
-bash skills/go-code-review/tools/agents/<tool-name>.sh <go-files...>
+bash skills/code-review-go/tools/agents/<tool-name>.sh <go-files...>
 
 # Python 脚本
-python3 skills/go-code-review/tools/agents/<tool-name>.py <go-files...>
+python3 skills/code-review-go/tools/agents/<tool-name>.py <go-files...>
 ```
 
 如果没有，写完分析逻辑后，**将其保存为新工具**供后续复用。
